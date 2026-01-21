@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
+import ExerciseEditor from './ExerciseEditor';
 
 const COLORS = [
     { label: 'Varsayılan', value: 'bg-gray-50' },
@@ -18,8 +19,6 @@ const COLUMN_COLORS = [
     { label: 'Yeşil (Legs)', value: 'bg-green-100 border-green-300', type: 'Legs' },
 ];
 
-const EXERCISE_GROUPS = ['Push', 'Pull', 'Legs', 'Cardio', 'Mix', 'Other'];
-
 // Helper for Portal
 const Modal = ({ children, onClose }) => {
     return createPortal(
@@ -32,40 +31,50 @@ const Modal = ({ children, onClose }) => {
     );
 };
 
-export default function WeeklyGrid({ activeWeek, onCellChange, onAddExercise, onUpdateExercises, onUpdateRowColor, onUpdateDay, onUpdateExerciseGroup }) {
-    const { exercises, gridData, rowColors = {}, days = [], exerciseGroups = {} } = activeWeek;
+export default function WeeklyGrid({
+    activeWeek,
+    onCellChange,
+    onAddExercise,
+    onUpdateExercises,
+    onUpdateRowColor,
+    onUpdateDay,
+    // Yeni props
+    muscleGroups = {},
+    workoutTypes = [],
+    exerciseDetails = {},
+    onUpdateExerciseDetails
+}) {
+    const { exercises, gridData, rowColors = {}, days = [] } = activeWeek;
 
     // UI State
-    const [filterType, setFilterType] = useState('All'); // All, Push, Pull, ...
+    const [filterType, setFilterType] = useState('All');
+    const [filterMuscle, setFilterMuscle] = useState('All');
 
-    // Local state for editing exercise name
-    const [editingExerciseIndex, setEditingExerciseIndex] = useState(null);
-    const [editingName, setEditingName] = useState("");
+    // Exercise Editor State
+    const [editingExercise, setEditingExercise] = useState(null); // { index, name }
 
-    // Color/Group Picker State
-    const [contextMenu, setContextMenu] = useState(null); // { index, x, y }
+    // Color Picker State (sağ tık için)
+    const [contextMenu, setContextMenu] = useState(null);
 
     // Column Editing State
-    const [editingDay, setEditingDay] = useState(null); // { index, label, type, color }
+    const [editingDay, setEditingDay] = useState(null);
 
-    const startEditing = (index, currentName) => {
-        setEditingExerciseIndex(index);
-        setEditingName(currentName);
+    const openExerciseEditor = (index, name) => {
+        setEditingExercise({ index, name });
         setContextMenu(null);
     };
 
-    const saveEditing = (index) => {
-        if (editingName.trim()) {
+    const handleExerciseSave = ({ name, muscles, workoutType, targetReps }) => {
+        // İsmi güncelle
+        if (name && name !== exercises[editingExercise.index]) {
             const newExercises = [...exercises];
-            newExercises[index] = editingName.trim();
+            newExercises[editingExercise.index] = name;
             onUpdateExercises(activeWeek.id, newExercises);
         }
-        setEditingExerciseIndex(null);
-    };
-
-    const handleKeyDown = (e, index) => {
-        if (e.key === 'Enter') saveEditing(index);
-        if (e.key === 'Escape') setEditingExerciseIndex(null);
+        // Kas grupları, antrenman tipi ve hedef set/tekrar güncelle
+        if (onUpdateExerciseDetails) {
+            onUpdateExerciseDetails(editingExercise.index, { muscles, workoutType, targetReps });
+        }
     };
 
     const handleAddExerciseLocal = () => {
@@ -91,13 +100,6 @@ export default function WeeklyGrid({ activeWeek, onCellChange, onAddExercise, on
         setContextMenu(null);
     };
 
-    const handleGroupSelect = (group) => {
-        if (contextMenu && onUpdateExerciseGroup) {
-            onUpdateExerciseGroup(activeWeek.id, contextMenu.index, group);
-        }
-        setContextMenu(null);
-    };
-
     const openDayEditor = (day, index) => {
         setEditingDay({ ...day, index });
     };
@@ -113,35 +115,76 @@ export default function WeeklyGrid({ activeWeek, onCellChange, onAddExercise, on
         setEditingDay(null);
     };
 
-    // Determine which rows to show based on filter
+    // Filtreleme mantığı
     const visibleExercises = exercises.map((ex, i) => ({ name: ex, originalIndex: i }))
         .filter(({ originalIndex }) => {
-            if (filterType === 'All') return true;
-            const group = exerciseGroups[originalIndex] || 'Other';
-            return group === filterType;
+            const details = exerciseDetails[originalIndex] || {};
+            const exerciseWorkoutType = details.workoutType || '';
+            const exerciseMuscles = details.muscles || [];
+
+            // Antrenman tipi filtresi
+            if (filterType !== 'All' && exerciseWorkoutType !== filterType) {
+                return false;
+            }
+
+            // Kas grubu filtresi
+            if (filterMuscle !== 'All' && !exerciseMuscles.includes(filterMuscle)) {
+                return false;
+            }
+
+            return true;
         });
+
+    // Kas gruplarını kategorilere göre grupla (filtre için)
+    const groupedMusclesForFilter = Object.values(muscleGroups).reduce((acc, muscle) => {
+        const category = muscle.category || 'Diğer';
+        if (!acc[category]) acc[category] = [];
+        acc[category].push(muscle);
+        return acc;
+    }, {});
 
     return (
         <div className="p-4 space-y-6" onClick={() => setContextMenu(null)}>
 
             {/* Controls Bar */}
-            <div className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
-                <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-gray-600">Filtre:</span>
-                    <select
-                        value={filterType}
-                        onChange={(e) => setFilterType(e.target.value)}
-                        className="p-1 border border-gray-300 rounded text-sm bg-gray-50 focus:ring-2 focus:ring-indigo-500"
-                    >
-                        <option value="All">Tümü</option>
-                        {EXERCISE_GROUPS.map(g => (
-                            <option key={g} value={g}>{g}</option>
-                        ))}
-                        <option value="Unassigned">Grubu Yok</option>
-                    </select>
+            <div className="flex flex-wrap justify-between items-center gap-3 bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                <div className="flex items-center gap-4 flex-wrap">
+                    {/* Antrenman Tipi Filtresi */}
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-gray-600">Antrenman:</span>
+                        <select
+                            value={filterType}
+                            onChange={(e) => setFilterType(e.target.value)}
+                            className="p-1.5 border border-gray-300 rounded text-sm bg-gray-50 focus:ring-2 focus:ring-indigo-500"
+                        >
+                            <option value="All">Tümü</option>
+                            {workoutTypes.map(t => (
+                                <option key={t} value={t}>{t}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Kas Grubu Filtresi */}
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-gray-600">Kas:</span>
+                        <select
+                            value={filterMuscle}
+                            onChange={(e) => setFilterMuscle(e.target.value)}
+                            className="p-1.5 border border-gray-300 rounded text-sm bg-gray-50 focus:ring-2 focus:ring-indigo-500"
+                        >
+                            <option value="All">Tümü</option>
+                            {Object.entries(groupedMusclesForFilter).map(([category, muscles]) => (
+                                <optgroup key={category} label={category}>
+                                    {muscles.map(m => (
+                                        <option key={m.id} value={m.id}>{m.label}</option>
+                                    ))}
+                                </optgroup>
+                            ))}
+                        </select>
+                    </div>
                 </div>
                 <div className="text-xs text-blue-600">
-            Sağ tık > Grup Seç ile hareketleri gruplayabilirsiniz.
+                    💡 Egzersiz satırına tıklayarak kas/antrenman tipi ayarlayabilirsiniz
                 </div>
             </div>
 
@@ -149,7 +192,7 @@ export default function WeeklyGrid({ activeWeek, onCellChange, onAddExercise, on
                 <table className="min-w-full border-collapse bg-white">
                     <thead>
                         <tr>
-                            <th className="p-3 border-b-2 border-r border-gray-200 bg-gray-50 text-left min-w-[200px] sticky left-0 z-10 shadow-sm relative group">
+                            <th className="p-3 border-b-2 border-r border-gray-200 bg-gray-50 text-left min-w-[220px] sticky left-0 z-10 shadow-sm relative group">
                                 Egzersizler
                                 <button
                                     onClick={handleAddExerciseLocal}
@@ -161,7 +204,8 @@ export default function WeeklyGrid({ activeWeek, onCellChange, onAddExercise, on
                             {days.map((day, index) => (
                                 <th
                                     key={day.id || index}
-                                    className={`p-3 border-b-2 border-r border-gray-200 min-w-[120px] text-center cursor-pointer hover:brightness-95 transition ${day.color}`}
+                                    className={`p-3 border-b-2 border-r border-gray-200 min-w-[120px] text-center cursor-pointer hover:brightness-95 transition resize-x overflow-hidden ${day.color}`}
+                                    style={{ resize: 'horizontal', overflow: 'hidden', minWidth: '120px', maxWidth: '300px' }}
                                     onClick={() => openDayEditor(day, index)}
                                 >
                                     <div className="font-bold text-gray-800">{day.label}</div>
@@ -173,42 +217,52 @@ export default function WeeklyGrid({ activeWeek, onCellChange, onAddExercise, on
                     <tbody>
                         {visibleExercises.map(({ name: exercise, originalIndex: rowIndex }) => {
                             const rowBgColor = rowColors[rowIndex] || 'bg-gray-50';
-                            const group = exerciseGroups[rowIndex];
+                            const details = exerciseDetails[rowIndex] || {};
+                            const exerciseMuscles = details.muscles || [];
+                            const exerciseWorkoutType = details.workoutType || '';
+                            const targetReps = details.targetReps || '';
 
                             return (
                                 <tr key={rowIndex} className="hover:bg-gray-50 transition-colors">
                                     {/* Exercise Name Cell */}
                                     <td
-                                        className={`p-3 border-r border-b border-gray-200 font-semibold text-gray-700 ${rowBgColor} sticky left-0 z-10 shadow-sm text-sm relative group`}
+                                        className={`p-3 border-r border-b border-gray-200 font-semibold text-gray-700 ${rowBgColor} sticky left-0 z-10 shadow-sm text-sm relative group cursor-pointer`}
+                                        onClick={() => openExerciseEditor(rowIndex, exercise)}
                                         onContextMenu={(e) => handleContextMenu(e, rowIndex)}
                                     >
-                                        <div className="flex flex-col">
-                                            {editingExerciseIndex === rowIndex ? (
-                                                <input
-                                                    autoFocus
-                                                    type="text"
-                                                    value={editingName}
-                                                    onChange={(e) => setEditingName(e.target.value)}
-                                                    onBlur={() => saveEditing(rowIndex)}
-                                                    onKeyDown={(e) => handleKeyDown(e, rowIndex)}
-                                                    className="w-full p-1 border border-indigo-300 rounded text-sm"
-                                                />
-                                            ) : (
-                                                <div
-                                                    onClick={(e) => { e.stopPropagation(); startEditing(rowIndex, exercise); }}
-                                                    className="cursor-pointer hover:text-indigo-600 flex justify-between items-center"
-                                                    title="İsmi düzenlemek için tıkla, Grup/Renk için sağ tıkla"
-                                                >
-                                                    <span>{exercise}</span>
-                                                    <span className="opacity-0 group-hover:opacity-100 text-xs text-gray-400">✎</span>
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex justify-between items-center">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="hover:text-indigo-600">{exercise}</span>
+                                                    {/* Hedef Set/Tekrar */}
+                                                    {targetReps && (
+                                                        <span className="text-[11px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold">
+                                                            {targetReps}
+                                                        </span>
+                                                    )}
                                                 </div>
+                                                <span className="opacity-0 group-hover:opacity-100 text-xs text-gray-400">✎</span>
+                                            </div>
+
+                                            {/* Antrenman Tipi Badge */}
+                                            {exerciseWorkoutType && (
+                                                <span className="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded w-fit font-medium">
+                                                    {exerciseWorkoutType}
+                                                </span>
                                             )}
 
-                                            {/* Group Label Badge */}
-                                            {group && (
-                                                <span className="text-[10px] bg-gray-200 text-gray-600 px-1 rounded w-fit mt-1">
-                                                    {group}
-                                                </span>
+                                            {/* Kas Grupları Badges */}
+                                            {exerciseMuscles.length > 0 && (
+                                                <div className="flex flex-wrap gap-1 mt-0.5">
+                                                    {exerciseMuscles.slice(0, 3).map(muscleId => (
+                                                        <span key={muscleId} className="text-[9px] bg-gray-200 text-gray-600 px-1 rounded">
+                                                            {muscleGroups[muscleId]?.label || muscleId}
+                                                        </span>
+                                                    ))}
+                                                    {exerciseMuscles.length > 3 && (
+                                                        <span className="text-[9px] text-gray-400">+{exerciseMuscles.length - 3}</span>
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
                                     </td>
@@ -216,20 +270,20 @@ export default function WeeklyGrid({ activeWeek, onCellChange, onAddExercise, on
                                     {days.map((day, index) => {
                                         const cellKey = `${rowIndex}-${day.id || index}`;
 
-                                        // SMART DISABLE LOGIC
-                                        // If both Exercise Group and Day Type are set, and they DON'T match, and Day Type isn't "Mix" or "Off"
-                                        // Then we visually disable it.
-                                        const isMismatch = group && day.type &&
+                                        // Akıllı devre dışı bırakma
+                                        const isMismatch = exerciseWorkoutType &&
+                                            day.type &&
                                             day.type !== 'Off' &&
                                             day.type !== 'Mix' &&
-                                            group !== 'Mix' &&
-                                            group.toLowerCase() !== day.type.toLowerCase();
+                                            exerciseWorkoutType !== 'Mix' &&
+                                            exerciseWorkoutType !== 'Full Body' &&
+                                            exerciseWorkoutType.toLowerCase() !== day.type.toLowerCase();
 
                                         return (
                                             <td key={day.id || index} className={`p-0 border-r border-b border-gray-200 relative ${isMismatch ? 'bg-gray-100 bg-opacity-50' : ''}`}>
                                                 <input
                                                     type="text"
-                                                    disabled={isMismatch} // Physically disable input
+                                                    disabled={isMismatch}
                                                     value={gridData[cellKey] || ''}
                                                     onChange={(e) => onCellChange(activeWeek.id, cellKey, e.target.value)}
                                                     className={`w-full h-full p-2 bg-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-center text-gray-800 text-sm font-medium placeholder-gray-300 ${day.color?.replace('border-', '') || ''} ${isMismatch ? 'cursor-not-allowed opacity-30' : 'bg-opacity-30'}`}
@@ -245,29 +299,31 @@ export default function WeeklyGrid({ activeWeek, onCellChange, onAddExercise, on
                 </table>
             </div>
 
-            {/* FIXED CONTEXT MENU PORTAL */}
+            {/* EXERCISE EDITOR MODAL */}
+            <ExerciseEditor
+                isOpen={editingExercise !== null}
+                onClose={() => setEditingExercise(null)}
+                exerciseName={editingExercise?.name || ''}
+                exerciseIndex={editingExercise?.index}
+                exerciseDetails={editingExercise ? exerciseDetails[editingExercise.index] : null}
+                muscleGroups={muscleGroups}
+                workoutTypes={workoutTypes}
+                onSave={handleExerciseSave}
+            />
+
+            {/* COLOR CONTEXT MENU PORTAL */}
             {contextMenu && createPortal(
                 <div
-                    className="fixed z-[9999] bg-white shadow-xl border border-gray-200 rounded-lg p-2 w-48 flex flex-col gap-1"
+                    className="fixed z-[9999] bg-white shadow-xl border border-gray-200 rounded-lg p-2 w-40"
                     style={{ top: contextMenu.y, left: contextMenu.x }}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="text-xs font-bold text-gray-400 mb-1 px-2 border-b pb-1">HAREKET GRUBU</div>
-                    <div className="grid grid-cols-2 gap-1 mb-2">
-                        {EXERCISE_GROUPS.map(g => (
-                            <button key={g} onClick={() => handleGroupSelect(g)} className="text-xs px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-left">
-                                {g}
-                            </button>
-                        ))}
-                        <button onClick={() => handleGroupSelect(null)} className="text-xs px-2 py-1 text-red-500 hover:bg-red-50 rounded text-left">Sıfırla</button>
-                    </div>
-
-                    <div className="text-xs font-bold text-gray-400 mb-1 px-2 border-b pb-1">RENK SEÇİN</div>
+                    <div className="text-xs font-bold text-gray-400 mb-1 px-2 border-b pb-1">SATIR RENGİ</div>
                     {COLORS.map(c => (
                         <button
                             key={c.value}
                             onClick={() => handleColorSelect(c.value)}
-                            className={`text-left px-2 py-1 text-sm rounded hover:bg-gray-100 flex items-center gap-2`}
+                            className={`text-left px-2 py-1 text-sm rounded hover:bg-gray-100 flex items-center gap-2 w-full`}
                         >
                             <span className={`w-3 h-3 rounded-full border border-gray-300 ${c.value}`}></span>
                             {c.label}
@@ -293,14 +349,16 @@ export default function WeeklyGrid({ activeWeek, onCellChange, onAddExercise, on
                     </div>
 
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Antrenman Türü (Push, Pull, Legs...)</label>
-                        <div className="text-xs text-gray-500 mb-2">Doğru eşleşme için "Push", "Pull", "Legs" türlerini kullanın.</div>
-                        <input
-                            type="text"
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Antrenman Türü</label>
+                        <select
                             value={editingDay.type}
                             onChange={e => setEditingDay({ ...editingDay, type: e.target.value })}
-                            className="w-full p-2 border border-gray-300 rounded"
-                        />
+                            className="w-full p-2 border border-gray-300 rounded bg-white"
+                        >
+                            {workoutTypes.map(t => (
+                                <option key={t} value={t}>{t}</option>
+                            ))}
+                        </select>
                     </div>
 
                     <div className="mb-4">

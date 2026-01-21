@@ -3,6 +3,32 @@ import initialData from '../data_import.json';
 
 const STORAGE_KEY = 'progressio_data_v2';
 
+// Varsayılan kas grupları - kategorilere ayrılmış
+const DEFAULT_MUSCLE_GROUPS = {
+    'upper_chest': { id: 'upper_chest', label: 'Üst Göğüs', category: 'Göğüs' },
+    'mid_chest': { id: 'mid_chest', label: 'Orta Göğüs', category: 'Göğüs' },
+    'lower_chest': { id: 'lower_chest', label: 'Alt Göğüs', category: 'Göğüs' },
+    'front_delt': { id: 'front_delt', label: 'Ön Omuz', category: 'Omuz' },
+    'side_delt': { id: 'side_delt', label: 'Yan Omuz', category: 'Omuz' },
+    'rear_delt': { id: 'rear_delt', label: 'Arka Omuz', category: 'Omuz' },
+    'lats': { id: 'lats', label: 'Kanat (Lat)', category: 'Sırt' },
+    'traps': { id: 'traps', label: 'Trapez', category: 'Sırt' },
+    'rhomboids': { id: 'rhomboids', label: 'Orta Sırt', category: 'Sırt' },
+    'lower_back': { id: 'lower_back', label: 'Bel', category: 'Sırt' },
+    'biceps': { id: 'biceps', label: 'Biceps', category: 'Kollar' },
+    'triceps': { id: 'triceps', label: 'Triceps', category: 'Kollar' },
+    'forearm': { id: 'forearm', label: 'Ön Kol', category: 'Kollar' },
+    'quads': { id: 'quads', label: 'Quadriceps', category: 'Bacak' },
+    'hamstrings': { id: 'hamstrings', label: 'Hamstring', category: 'Bacak' },
+    'glutes': { id: 'glutes', label: 'Kalça', category: 'Bacak' },
+    'calves': { id: 'calves', label: 'Baldır', category: 'Bacak' },
+    'abs': { id: 'abs', label: 'Karın', category: 'Core' },
+    'obliques': { id: 'obliques', label: 'Yan Karın', category: 'Core' },
+};
+
+// Varsayılan antrenman tipleri (özelleştirilebilir)
+const DEFAULT_WORKOUT_TYPES = ['Push', 'Pull', 'Legs', 'Upper Body', 'Lower Body', 'Full Body', 'Cardio', 'Core', 'Off'];
+
 const DEFAULT_EXERCISES = initialData.exercises;
 const DEFAULT_GRID_DATA = initialData.gridData;
 
@@ -18,6 +44,13 @@ const DEFAULT_DAYS = [
 
 // Initial state structure
 const INITIAL_STATE = {
+    // Global settings (shared across all weeks)
+    muscleGroups: { ...DEFAULT_MUSCLE_GROUPS },
+    workoutTypes: [...DEFAULT_WORKOUT_TYPES],
+
+    // Exercise details - kas grupları ve antrenman tipi (index bazlı)
+    exerciseDetails: {}, // { 0: { muscles: ['upper_chest', 'triceps'], workoutType: 'Push' }, ... }
+
     weeks: [
         {
             id: 1,
@@ -25,7 +58,7 @@ const INITIAL_STATE = {
             exercises: DEFAULT_EXERCISES,
             gridData: DEFAULT_GRID_DATA,
             rowColors: {},
-            exerciseGroups: {}, // [NEW] Key: rowIndex, Value: groupType (Push, Pull, Legs, etc.)
+            exerciseGroups: {}, // Legacy - artık exerciseDetails kullanılıyor
             days: DEFAULT_DAYS
         }
     ],
@@ -44,6 +77,10 @@ export function useWorkoutData() {
                 days: w.days || DEFAULT_DAYS,
                 exerciseGroups: w.exerciseGroups || {}
             }));
+            // Migration for new global settings
+            parsed.muscleGroups = parsed.muscleGroups || { ...DEFAULT_MUSCLE_GROUPS };
+            parsed.workoutTypes = parsed.workoutTypes || [...DEFAULT_WORKOUT_TYPES];
+            parsed.exerciseDetails = parsed.exerciseDetails || {};
             return parsed;
         }
 
@@ -205,6 +242,58 @@ export function useWorkoutData() {
 
         importData: (jsonData) => {
             setData(jsonData);
+        },
+
+        // ===== YENİ: Kas Grubu ve Antrenman Tipi Yönetimi =====
+
+        // Yeni kas grubu ekle
+        addMuscleGroup: (id, label, category) => {
+            setData(prev => ({
+                ...prev,
+                muscleGroups: {
+                    ...prev.muscleGroups,
+                    [id]: { id, label, category }
+                }
+            }));
+        },
+
+        // Kas grubu sil
+        removeMuscleGroup: (id) => {
+            setData(prev => {
+                const newGroups = { ...prev.muscleGroups };
+                delete newGroups[id];
+                return { ...prev, muscleGroups: newGroups };
+            });
+        },
+
+        // Yeni antrenman tipi ekle
+        addWorkoutType: (name) => {
+            setData(prev => ({
+                ...prev,
+                workoutTypes: [...prev.workoutTypes, name]
+            }));
+        },
+
+        // Antrenman tipi sil
+        removeWorkoutType: (name) => {
+            setData(prev => ({
+                ...prev,
+                workoutTypes: prev.workoutTypes.filter(t => t !== name)
+            }));
+        },
+
+        // Egzersiz detaylarını güncelle (kas grupları + antrenman tipi)
+        updateExerciseDetails: (exerciseIndex, details) => {
+            setData(prev => ({
+                ...prev,
+                exerciseDetails: {
+                    ...prev.exerciseDetails,
+                    [exerciseIndex]: {
+                        ...(prev.exerciseDetails[exerciseIndex] || {}),
+                        ...details
+                    }
+                }
+            }));
         }
     };
 

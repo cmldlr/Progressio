@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useWorkoutData } from './hooks/useWorkoutData';
 import WeeklyGrid from './components/WeeklyGrid';
 import WeekSelector from './components/WeekSelector';
+import SettingsPanel from './components/SettingsPanel';
 
 function App() {
   const { data, activeWeek, actions } = useWorkoutData();
+  const [showSettings, setShowSettings] = useState(false);
 
   const handleExport = () => {
     const dataStr = JSON.stringify(data);
@@ -41,8 +43,16 @@ function App() {
       <div className="container mx-auto px-4">
         {/* Header Area */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-800">Progressio Tracker <span className="text-sm font-normal text-gray-500 ml-2">v2.1</span></h1>
-          <div className="flex gap-2 text-sm">
+          <h1 className="text-2xl font-bold text-gray-800">Progressio Tracker <span className="text-sm font-normal text-gray-500 ml-2">v2.2</span></h1>
+          <div className="flex gap-2 text-sm items-center">
+            <button
+              onClick={() => setShowSettings(true)}
+              className="text-gray-600 hover:text-gray-800 px-2 py-1 flex items-center gap-1"
+              title="Ayarlar"
+            >
+              ⚙️ Ayarlar
+            </button>
+            <span className="text-gray-300">|</span>
             <button onClick={actions.resetAll} className="text-red-600 hover:text-red-800 px-2 py-1">Sıfırla</button>
             <span className="text-gray-300">|</span>
             <button onClick={handleExport} className="text-gray-600 hover:text-gray-800 px-2 py-1">Yedek İndir</button>
@@ -71,10 +81,28 @@ function App() {
           onUpdateRowColor={actions.updateRowColor}
           onUpdateDay={actions.updateDay}
           onClearData={() => { /* Handled per week if needed, or globally */ }}
+          // Yeni props
+          muscleGroups={data.muscleGroups}
+          workoutTypes={data.workoutTypes}
+          exerciseDetails={data.exerciseDetails}
+          onUpdateExerciseDetails={actions.updateExerciseDetails}
         />
       </div>
+
+      {/* Settings Panel */}
+      <SettingsPanel
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        muscleGroups={data.muscleGroups}
+        workoutTypes={data.workoutTypes}
+        onAddMuscleGroup={actions.addMuscleGroup}
+        onRemoveMuscleGroup={actions.removeMuscleGroup}
+        onAddWorkoutType={actions.addWorkoutType}
+        onRemoveWorkoutType={actions.removeWorkoutType}
+      />
     </div>
   );
 }
 
 export default App;
+
