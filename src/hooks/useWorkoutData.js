@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import initialData from '../data_import.json';
+// import initialData from '../data_import.json'; // Demo data removed
 import { supabase, auth, workoutDB } from '../lib/supabaseClient';
 
-const STORAGE_KEY = 'progressio_data_v2';
+const STORAGE_KEY = 'progressio_data_v3';
 
 // Varsayılan kas grupları - kategorilere ayrılmış
 const DEFAULT_MUSCLE_GROUPS = {
@@ -30,29 +30,29 @@ const DEFAULT_MUSCLE_GROUPS = {
 // Varsayılan antrenman tipleri (özelleştirilebilir)
 const DEFAULT_WORKOUT_TYPES = ['Push', 'Pull', 'Legs', 'Upper Body', 'Lower Body', 'Full Body', 'Cardio', 'Core', 'Off'];
 
-const DEFAULT_EXERCISES = initialData.exercises;
-const DEFAULT_GRID_DATA = initialData.gridData;
+const DEFAULT_EXERCISES = [];
+const DEFAULT_GRID_DATA = {};
 
 const DEFAULT_DAYS = [
-    { id: 'Mon', label: 'Pazartesi', type: 'Off', color: 'bg-gray-100 border-gray-300' },
-    { id: 'Tue', label: 'Salı', type: 'Push', color: 'bg-red-100 border-red-300' },
-    { id: 'Wed', label: 'Çarşamba', type: 'Pull', color: 'bg-blue-100 border-blue-300' },
-    { id: 'Thu', label: 'Perşembe', type: 'Off', color: 'bg-gray-100 border-gray-300' },
-    { id: 'Fri', label: 'Cuma', type: 'Push', color: 'bg-red-100 border-red-300' },
-    { id: 'Sat', label: 'Cumartesi', type: 'Pull', color: 'bg-blue-100 border-blue-300' },
-    { id: 'Sun', label: 'Pazar', type: 'Legs', color: 'bg-green-100 border-green-300' },
+    { id: 'Mon', label: 'Pazartesi', type: '', color: 'gray' },
+    { id: 'Tue', label: 'Salı', type: '', color: 'gray' },
+    { id: 'Wed', label: 'Çarşamba', type: '', color: 'gray' },
+    { id: 'Thu', label: 'Perşembe', type: '', color: 'gray' },
+    { id: 'Fri', label: 'Cuma', type: '', color: 'gray' },
+    { id: 'Sat', label: 'Cumartesi', type: '', color: 'gray' },
+    { id: 'Sun', label: 'Pazar', type: '', color: 'gray' },
 ];
 
 // Varsayılan renk-antrenman eşleşmeleri
+// Varsayılan renk-antrenman eşleşmeleri (Temizlendi)
 const DEFAULT_WORKOUT_COLORS = {
-    'bg-gray-100 border-gray-300': { label: 'Gri', type: 'Off' },
-    'bg-red-100 border-red-300': { label: 'Kırmızı', type: 'Push' },
-    'bg-blue-100 border-blue-300': { label: 'Mavi', type: 'Pull' },
-    'bg-green-100 border-green-300': { label: 'Yeşil', type: 'Legs' },
-    'bg-yellow-100 border-yellow-300': { label: 'Sarı', type: 'Upper Body' },
-    'bg-purple-100 border-purple-300': { label: 'Mor', type: 'Lower Body' },
-    'bg-orange-100 border-orange-300': { label: 'Turuncu', type: 'Cardio' },
-    'bg-pink-100 border-pink-300': { label: 'Pembe', type: 'Full Body' },
+    'gray': { label: 'Varsayılan', type: 'Off' },
+    'red': { label: 'Kırmızı', type: '' },
+    'blue': { label: 'Mavi', type: '' },
+    'green': { label: 'Yeşil', type: '' },
+    'yellow': { label: 'Sarı', type: '' },
+    'purple': { label: 'Mor', type: '' },
+    'orange': { label: 'Turuncu', type: '' },
 };
 
 // Initial state structure
@@ -107,10 +107,7 @@ const transformSupabaseData = (dbData) => {
         muscleGroups: dbData.muscle_groups || { ...DEFAULT_MUSCLE_GROUPS },
         workoutTypes: dbData.workout_types || [...DEFAULT_WORKOUT_TYPES],
         exerciseDetails: dbData.exercise_details || {},
-        // Not: Şimdilik veritabanında sütun olmadığı için state'e kaydetmiyoruz, 
-        // ama tam entegrasyon için bir JSONB sütunu eklenebilir. 
-        // Şimdilik default kullanıyoruz veya localStorage ile birleştirilebilir.
-        workoutColors: { ...DEFAULT_WORKOUT_COLORS }
+        workoutColors: dbData.workout_colors || { ...DEFAULT_WORKOUT_COLORS }
     };
 };
 
