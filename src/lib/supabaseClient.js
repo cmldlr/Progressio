@@ -77,6 +77,7 @@ export const workoutDB = {
                 muscle_groups: workoutData.muscleGroups,
                 workout_types: workoutData.workoutTypes,
                 exercise_details: workoutData.exerciseDetails,
+                workout_colors: workoutData.workoutColors,
                 updated_at: new Date().toISOString()
             }, {
                 onConflict: 'user_id'

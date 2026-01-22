@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS workout_data (
     muscle_groups JSONB DEFAULT '{}',
     workout_types JSONB DEFAULT '[]',
     exercise_details JSONB DEFAULT '{}',
+    workout_colors JSONB DEFAULT '{}',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -51,3 +52,6 @@ CREATE TRIGGER update_workout_data_updated_at
     BEFORE UPDATE ON workout_data
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
+-- MIGRATION: Eğer tablo zaten varsa bu komutu çalıştırarak yeni kolonu ekleyebilirsiniz:
+-- ALTER TABLE workout_data ADD COLUMN IF NOT EXISTS workout_colors JSONB DEFAULT '{}';
