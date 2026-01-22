@@ -4,26 +4,27 @@ import React, { useState } from 'react';
 // Görüntü: Kollar hafif açık, vücut tam ortalı
 
 const FRONT_MUSCLE_REGIONS = {
-    // GÖĞÜS - 3 ayrı yatay şerit (görüntüde net ayrılmış)
-    'upper_chest': { x: 50, y: 19, width: 30, height: 4, label: 'Üst Göğüs' },
-    'mid_chest': { x: 50, y: 24, width: 34, height: 5, label: 'Orta Göğüs' },
-    'lower_chest': { x: 50, y: 30, width: 30, height: 4, label: 'Alt Göğüs' },
+    // GÖĞÜS - 3 ayrı yatay şerit (görüntüde pektorallerin bittiği noktayı baz al)
+    // Göğüs bölgesi: y=16% ile y=32% arası
+    'upper_chest': { x: 50, y: 18, width: 28, height: 4, label: 'Üst Göğüs' },
+    'mid_chest': { x: 50, y: 23, width: 32, height: 5, label: 'Orta Göğüs' },
+    'lower_chest': { x: 50, y: 29, width: 28, height: 4, label: 'Alt Göğüs' },
 
     // OMUZ - yanlarda üst kısım
-    'front_delt': { x: 28, y: 17, width: 12, height: 7, label: 'Ön Omuz', mirror: 72 },
-    'side_delt': { x: 22, y: 16, width: 8, height: 8, label: 'Yan Omuz', mirror: 78 },
+    'front_delt': { x: 28, y: 17, width: 11, height: 6, label: 'Ön Omuz', mirror: 72 },
+    'side_delt': { x: 22, y: 16, width: 7, height: 7, label: 'Yan Omuz', mirror: 78 },
 
     // KOLLAR - hafif açık
-    'biceps': { x: 18, y: 28, width: 8, height: 12, label: 'Biceps', mirror: 82 },
-    'forearm': { x: 14, y: 42, width: 7, height: 12, label: 'Ön Kol', mirror: 86 },
+    'biceps': { x: 18, y: 28, width: 7, height: 11, label: 'Biceps', mirror: 82 },
+    'forearm': { x: 14, y: 42, width: 6, height: 11, label: 'Ön Kol', mirror: 86 },
 
-    // KARIN - ortada belirgin six-pack
-    'abs': { x: 50, y: 40, width: 20, height: 14, label: 'Karın' },
-    'obliques': { x: 35, y: 38, width: 8, height: 12, label: 'Yan Karın', mirror: 65 },
+    // KARIN - ortada belirgin six-pack (göğüsten ayrı, y=35% ile y=52% arası)
+    'abs': { x: 50, y: 43, width: 18, height: 16, label: 'Karın' },
+    'obliques': { x: 36, y: 42, width: 7, height: 12, label: 'Yan Karın', mirror: 64 },
 
     // BACAK - geniş quad bölgesi
-    'quads': { x: 38, y: 62, width: 14, height: 20, label: 'Quadriceps', mirror: 62 },
-    'calves': { x: 40, y: 88, width: 10, height: 10, label: 'Baldır', mirror: 60 },
+    'quads': { x: 38, y: 64, width: 13, height: 18, label: 'Quadriceps', mirror: 62 },
+    'calves': { x: 40, y: 88, width: 9, height: 10, label: 'Baldır', mirror: 60 },
 };
 
 const BACK_MUSCLE_REGIONS = {
@@ -105,8 +106,8 @@ export default function BodyDiagram({ selectedMuscles = [], onToggleMuscle, musc
                 <button
                     onClick={() => setView('front')}
                     className={`px-5 py-2 text-sm font-semibold rounded-lg transition-all ${view === 'front'
-                            ? 'bg-white text-indigo-600 shadow-md'
-                            : 'text-gray-500 hover:text-gray-700'
+                        ? 'bg-white text-indigo-600 shadow-md'
+                        : 'text-gray-500 hover:text-gray-700'
                         }`}
                 >
                     Önden
@@ -114,8 +115,8 @@ export default function BodyDiagram({ selectedMuscles = [], onToggleMuscle, musc
                 <button
                     onClick={() => setView('back')}
                     className={`px-5 py-2 text-sm font-semibold rounded-lg transition-all ${view === 'back'
-                            ? 'bg-white text-indigo-600 shadow-md'
-                            : 'text-gray-500 hover:text-gray-700'
+                        ? 'bg-white text-indigo-600 shadow-md'
+                        : 'text-gray-500 hover:text-gray-700'
                         }`}
                 >
                     Arkadan

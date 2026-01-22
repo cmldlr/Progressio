@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import initialData from '../data_import.json';
+import { supabase, auth, workoutDB } from '../lib/supabaseClient';
 
 const STORAGE_KEY = 'progressio_data_v2';
 
@@ -42,14 +43,27 @@ const DEFAULT_DAYS = [
     { id: 'Sun', label: 'Pazar', type: 'Legs', color: 'bg-green-100 border-green-300' },
 ];
 
+// Varsayılan renk-antrenman eşleşmeleri
+const DEFAULT_WORKOUT_COLORS = {
+    'bg-gray-100 border-gray-300': { label: 'Gri', type: 'Off' },
+    'bg-red-100 border-red-300': { label: 'Kırmızı', type: 'Push' },
+    'bg-blue-100 border-blue-300': { label: 'Mavi', type: 'Pull' },
+    'bg-green-100 border-green-300': { label: 'Yeşil', type: 'Legs' },
+    'bg-yellow-100 border-yellow-300': { label: 'Sarı', type: 'Upper Body' },
+    'bg-purple-100 border-purple-300': { label: 'Mor', type: 'Lower Body' },
+    'bg-orange-100 border-orange-300': { label: 'Turuncu', type: 'Cardio' },
+    'bg-pink-100 border-pink-300': { label: 'Pembe', type: 'Full Body' },
+};
+
 // Initial state structure
 const INITIAL_STATE = {
     // Global settings (shared across all weeks)
     muscleGroups: { ...DEFAULT_MUSCLE_GROUPS },
     workoutTypes: [...DEFAULT_WORKOUT_TYPES],
+    workoutColors: { ...DEFAULT_WORKOUT_COLORS }, // Yeni eklenen kısım
 
     // Exercise details - kas grupları ve antrenman tipi (index bazlı)
-    exerciseDetails: {}, // { 0: { muscles: ['upper_chest', 'triceps'], workoutType: 'Push' }, ... }
+    exerciseDetails: {},
 
     weeks: [
         {
@@ -58,63 +72,135 @@ const INITIAL_STATE = {
             exercises: DEFAULT_EXERCISES,
             gridData: DEFAULT_GRID_DATA,
             rowColors: {},
-            exerciseGroups: {}, // Legacy - artık exerciseDetails kullanılıyor
+            exerciseGroups: {}, // Legacy
             days: DEFAULT_DAYS
         }
     ],
     activeWeekId: 1
 };
 
+// Helper: localStorage'dan veri yükle
+const loadFromLocalStorage = () => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        parsed.weeks = parsed.weeks.map(w => ({
+            ...w,
+            days: w.days || DEFAULT_DAYS,
+            exerciseGroups: w.exerciseGroups || {}
+        }));
+        parsed.muscleGroups = parsed.muscleGroups || { ...DEFAULT_MUSCLE_GROUPS };
+        parsed.workoutTypes = parsed.workoutTypes || [...DEFAULT_WORKOUT_TYPES];
+        parsed.exerciseDetails = parsed.exerciseDetails || {};
+        parsed.workoutColors = parsed.workoutColors || { ...DEFAULT_WORKOUT_COLORS }; // Yüklerken kontrol et
+        return parsed;
+    }
+    return null;
+};
+
+// Helper: Supabase'den gelen veriyi dönüştür
+const transformSupabaseData = (dbData) => {
+    if (!dbData) return null;
+    return {
+        weeks: dbData.weeks || INITIAL_STATE.weeks,
+        activeWeekId: dbData.active_week_id || 1,
+        muscleGroups: dbData.muscle_groups || { ...DEFAULT_MUSCLE_GROUPS },
+        workoutTypes: dbData.workout_types || [...DEFAULT_WORKOUT_TYPES],
+        exerciseDetails: dbData.exercise_details || {},
+        // Not: Şimdilik veritabanında sütun olmadığı için state'e kaydetmiyoruz, 
+        // ama tam entegrasyon için bir JSONB sütunu eklenebilir. 
+        // Şimdilik default kullanıyoruz veya localStorage ile birleştirilebilir.
+        workoutColors: { ...DEFAULT_WORKOUT_COLORS }
+    };
+};
+
 export function useWorkoutData() {
-    const [data, setData] = useState(() => {
-        // Try to load v2 data
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            // Migration: Ensure new fields exist
-            parsed.weeks = parsed.weeks.map(w => ({
-                ...w,
-                days: w.days || DEFAULT_DAYS,
-                exerciseGroups: w.exerciseGroups || {}
-            }));
-            // Migration for new global settings
-            parsed.muscleGroups = parsed.muscleGroups || { ...DEFAULT_MUSCLE_GROUPS };
-            parsed.workoutTypes = parsed.workoutTypes || [...DEFAULT_WORKOUT_TYPES];
-            parsed.exerciseDetails = parsed.exerciseDetails || {};
-            return parsed;
-        }
+    const [data, setData] = useState(() => loadFromLocalStorage() || INITIAL_STATE);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [syncStatus, setSyncStatus] = useState('idle'); // 'idle' | 'syncing' | 'synced' | 'error'
+    const saveTimeoutRef = useRef(null);
 
-        // Fallback: Try to migrate v1 data (from previous phase)
-        const v1Data = localStorage.getItem('fitness_data');
-        const v1Exercises = localStorage.getItem('fitness_exercises');
-
-        if (v1Data || v1Exercises) {
-            const migratedGrid = v1Data ? JSON.parse(v1Data) : DEFAULT_GRID_DATA;
-            const migratedEx = v1Exercises ? JSON.parse(v1Exercises) : DEFAULT_EXERCISES;
-
-            return {
-                weeks: [
-                    {
-                        id: 1,
-                        label: '1. Hafta',
-                        exercises: migratedEx,
-                        gridData: migratedGrid,
-                        rowColors: {},
-                        exerciseGroups: {},
-                        days: DEFAULT_DAYS
-                    }
-                ],
-                activeWeekId: 1
-            };
-        }
-
-        return INITIAL_STATE;
-    });
-
-    // Auto-save whenever data changes
+    // Kullanıcı durumunu izle
     useEffect(() => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    }, [data]);
+        const checkUser = async () => {
+            const currentUser = await auth.getUser();
+            setUser(currentUser);
+            setLoading(false);
+        };
+        checkUser();
+
+        const { data: { subscription } } = auth.onAuthStateChange((event, session) => {
+            setUser(session?.user || null);
+            if (event === 'SIGNED_OUT') {
+                // Çıkış yapıldığında localStorage'a geri dön
+                setSyncStatus('idle');
+            }
+        });
+
+        return () => subscription?.unsubscribe();
+    }, []);
+
+    // Kullanıcı giriş yaptığında Supabase'den veri çek
+    useEffect(() => {
+        const loadFromSupabase = async () => {
+            if (!user || !supabase) return;
+
+            try {
+                setSyncStatus('syncing');
+                const dbData = await workoutDB.getData(user.id);
+
+                if (dbData) {
+                    const transformedData = transformSupabaseData(dbData);
+                    setData(transformedData);
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(transformedData));
+                } else {
+                    // İlk kez giriş yapıyorsa, mevcut localStorage verisini Supabase'e kaydet
+                    const localData = loadFromLocalStorage();
+                    if (localData) {
+                        await workoutDB.upsertData(user.id, localData);
+                    }
+                }
+                setSyncStatus('synced');
+            } catch (error) {
+                console.error('Supabase sync error:', error);
+                setSyncStatus('error');
+            }
+        };
+
+        loadFromSupabase();
+    }, [user]);
+
+    // Debounced save - hem localStorage hem Supabase'e kaydet
+    const saveData = useCallback((newData) => {
+        // Hemen localStorage'a kaydet
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
+
+        // Supabase'e debounced kaydet
+        if (user && supabase) {
+            if (saveTimeoutRef.current) {
+                clearTimeout(saveTimeoutRef.current);
+            }
+
+            setSyncStatus('syncing');
+            saveTimeoutRef.current = setTimeout(async () => {
+                try {
+                    await workoutDB.upsertData(user.id, newData);
+                    setSyncStatus('synced');
+                } catch (error) {
+                    console.error('Save to Supabase failed:', error);
+                    setSyncStatus('error');
+                }
+            }, 1000); // 1 saniye bekle
+        }
+    }, [user]);
+
+    // State değişikliklerini kaydet
+    useEffect(() => {
+        if (!loading) {
+            saveData(data);
+        }
+    }, [data, saveData, loading]);
 
     const activeWeek = data.weeks.find(w => w.id === data.activeWeekId) || data.weeks[0];
 
@@ -294,8 +380,88 @@ export function useWorkoutData() {
                     }
                 }
             }));
+        },
+
+        // Renk - Antrenman Tipi Eşleşmesini Güncelle
+        updateWorkoutColor: (colorKey, newType) => {
+            setData(prev => ({
+                ...prev,
+                workoutColors: {
+                    ...prev.workoutColors,
+                    [colorKey]: { ...prev.workoutColors[colorKey], type: newType }
+                }
+            }));
+        },
+
+        // Egzersiz Silme (Cascading Delete & Shift)
+        deleteExercise: (weekId, index) => {
+            if (!window.confirm("Bu egzersizi ve tüm verilerini silmek istediğinize emin misiniz?")) return;
+
+            setData(prev => {
+                const updatedWeeks = prev.weeks.map(week => {
+                    if (week.id !== weekId) return week;
+
+                    // 1. Arrayden sil
+                    const newExercises = week.exercises.filter((_, i) => i !== index);
+
+                    // 2. Row Colors'ı kaydır
+                    const newRowColors = {};
+                    Object.keys(week.rowColors || {}).forEach(k => {
+                        const key = parseInt(k);
+                        if (key < index) newRowColors[key] = week.rowColors[key];
+                        else if (key > index) newRowColors[key - 1] = week.rowColors[key];
+                    });
+
+                    // 3. Grid Data'yı kaydır
+                    const newGridData = {};
+                    Object.keys(week.gridData || {}).forEach(key => {
+                        const parts = key.split('-');
+                        // row index her zaman ilk parça
+                        const rowIdx = parseInt(parts[0]);
+                        // geri kalanı colId olarak birleştir (eğer tire varsa diye)
+                        const colId = parts.slice(1).join('-');
+
+                        if (rowIdx < index) newGridData[key] = week.gridData[key];
+                        else if (rowIdx > index) newGridData[`${rowIdx - 1}-${colId}`] = week.gridData[key];
+                    });
+
+                    return {
+                        ...week,
+                        exercises: newExercises,
+                        rowColors: newRowColors,
+                        gridData: newGridData
+                    };
+                });
+
+                // 4. Global Exercise Details'i kaydır
+                // Not: Details global tutulduğu için tüm haftaları etkiler mi? 
+                // Şu anki yapıda details index bazlı ve global. Yani 1. haftadaki sıra ile 2. haftaki sıra farklıysa sorun olabilir.
+                // Ancak şu anki yapıda egzersiz listesini kopyaladığımız için indexler genelde tutarlı.
+                // Yine de en doğrusu details'i haftalara özel tutmaktır ama şimdilik bu yapıyı koruyoruz.
+                const newExerciseDetails = {};
+                Object.keys(prev.exerciseDetails || {}).forEach(k => {
+                    const key = parseInt(k);
+                    if (key < index) newExerciseDetails[key] = prev.exerciseDetails[key];
+                    else if (key > index) newExerciseDetails[key - 1] = prev.exerciseDetails[key];
+                });
+
+                return {
+                    ...prev,
+                    weeks: updatedWeeks,
+                    exerciseDetails: newExerciseDetails
+                };
+            });
         }
     };
 
-    return { data, activeWeek, actions };
+    return {
+        data,
+        activeWeek,
+        actions,
+        // Auth related
+        user,
+        loading,
+        syncStatus,
+        signOut: auth.signOut
+    };
 }
