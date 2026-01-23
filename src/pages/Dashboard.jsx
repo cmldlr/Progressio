@@ -161,10 +161,10 @@ export default function Dashboard() {
                             <button onClick={() => setShowSettings(true)} className="p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition" title="Ayarlar">
                                 <Settings className="w-5 h-5" />
                             </button>
-                            <button onClick={handleExport} className="p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition" title="Yedek İndir">
+                            <button onClick={handleExport} className="hidden md:block p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition" title="Yedek İndir">
                                 <Download className="w-5 h-5" />
                             </button>
-                            <label className="p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition cursor-pointer" title="Yedek Yükle">
+                            <label className="hidden md:block p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition cursor-pointer" title="Yedek Yükle">
                                 <Upload className="w-5 h-5" />
                                 <input type="file" onChange={handleImport} className="hidden" accept=".json" />
                             </label>

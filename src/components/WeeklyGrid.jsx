@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { ChevronLeft, ChevronRight, Dumbbell, Copy, Plus } from 'lucide-react';
 import ExerciseEditor from './ExerciseEditor';
 import {
     THEME_COLORS,
@@ -51,6 +52,18 @@ export default function WeeklyGrid({
     const [editingExercise, setEditingExercise] = useState(null);
     const [contextMenu, setContextMenu] = useState(null);
     const [editingDay, setEditingDay] = useState(null);
+
+    // Mobil Görünüm için State
+    const [mobileDayIndex, setMobileDayIndex] = useState(() => {
+        const today = new Date().getDay(); // 0 (Sun) - 6 (Sat)
+        // Adjust to match our days array: Mon(0)..Sun(6)
+        const adjustedIndex = today === 0 ? 6 : today - 1;
+        return Math.max(0, Math.min(adjustedIndex, 6));
+    });
+
+    const handlePrevDay = () => setMobileDayIndex(prev => Math.max(0, prev - 1));
+    const handleNextDay = () => setMobileDayIndex(prev => Math.min(days.length - 1, prev + 1));
+
 
     // Focus Mode Effect: Dashboard'tan tetiklenirse
     useEffect(() => {
@@ -241,7 +254,8 @@ export default function WeeklyGrid({
                 </div>
             </div>
 
-            <div className="overflow-x-auto shadow-xl rounded-xl border border-gray-200 dark:border-slate-800 transition-colors">
+            {/* Desktop View (Hidden on Mobile) */}
+            <div className="hidden md:block overflow-x-auto shadow-xl rounded-xl border border-gray-200 dark:border-slate-800 transition-colors">
                 <table className="min-w-full border-collapse bg-white dark:bg-slate-950">
                     <thead>
                         <tr>
@@ -264,7 +278,6 @@ export default function WeeklyGrid({
                                     onClick={() => openDayEditor(day, index)}
                                     title="Türü ve rengi değiştirmek için tıklayın"
                                 >
-                                    {/* Sadece Gün İsmi - Type Kaldırıldı */}
                                     <div className="font-bold text-sm">{day.label}</div>
                                 </th>
                             ))}
@@ -280,7 +293,6 @@ export default function WeeklyGrid({
 
                             return (
                                 <tr key={rowIndex} className="border-b border-gray-100 dark:border-slate-800/50 hover:bg-gray-50 dark:hover:bg-slate-900/50 transition-colors group/row">
-                                    {/* Exercise Name Cell */}
                                     <td
                                         className={`p-3 border-r border-gray-200 dark:border-slate-800 font-semibold sticky left-0 z-10 shadow-sm text-sm relative group cursor-pointer ${getRowClasses(getColorIdFromClass(rowBgColor))} shadow-[4px_0_12px_-4px_rgba(0,0,0,0.1)]`}
                                         onClick={() => openExerciseEditor(rowIndex, exercise)}
@@ -347,6 +359,121 @@ export default function WeeklyGrid({
                         })}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Mobile View (< md) - "Day View" */}
+            <div className="md:hidden flex flex-col h-full bg-gray-50 dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 overflow-hidden">
+                {/* Mobile Day Navigation Header */}
+                <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
+                    <div className="flex items-center justify-between p-3">
+                        <button
+                            onClick={handlePrevDay}
+                            disabled={mobileDayIndex === 0}
+                            className={`p-2 rounded-full transition ${mobileDayIndex === 0 ? 'text-gray-300 dark:text-slate-700' : 'text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'}`}
+                        >
+                            <ChevronLeft className="w-6 h-6" />
+                        </button>
+
+                        <div
+                            className={`flex flex-col items-center flex-1 max-w-[200px] py-1.5 px-4 rounded-xl transition-colors cursor-pointer ${getHeaderClasses(getColorIdFromClass(days[mobileDayIndex]?.color))}`}
+                            onClick={() => openDayEditor(days[mobileDayIndex], mobileDayIndex)}
+                        >
+                            <span className="text-xs font-semibold opacity-70 uppercase tracking-wider mb-0.5">
+                                Gün {mobileDayIndex + 1} / 7
+                            </span>
+                            <span className="font-bold text-lg block truncate px-2">
+                                {days[mobileDayIndex]?.label}
+                            </span>
+                        </div>
+
+                        <button
+                            onClick={handleNextDay}
+                            disabled={mobileDayIndex === days.length - 1}
+                            className={`p-2 rounded-full transition ${mobileDayIndex === days.length - 1 ? 'text-gray-300 dark:text-slate-700' : 'text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'}`}
+                        >
+                            <ChevronRight className="w-6 h-6" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Mobile Exercises List */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px]">
+                    {visibleExercises.map(({ name: exercise, originalIndex: rowIndex }) => {
+                        const rowBgColor = rowColors[rowIndex] || '';
+                        const details = exerciseDetails[rowIndex] || {};
+                        const exerciseMuscles = details.muscles || [];
+                        const exerciseWorkoutType = details.workoutType || '';
+                        const targetReps = details.targetReps || '';
+
+                        const day = days[mobileDayIndex];
+                        const cellKey = `${rowIndex}-${day.id || mobileDayIndex}`;
+
+                        // Mismatch Logic (Same as Desktop)
+                        const isMismatch = exerciseWorkoutType &&
+                            day.type &&
+                            day.type !== 'Off' &&
+                            day.type !== 'Mix' &&
+                            exerciseWorkoutType !== 'Mix' &&
+                            exerciseWorkoutType !== 'Full Body' &&
+                            exerciseWorkoutType.toLowerCase() !== day.type.toLowerCase();
+
+                        return (
+                            <div key={rowIndex} className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden">
+                                {/* Header (Exercise Name) */}
+                                <div
+                                    className={`flex items-center justify-between p-3 border-b border-gray-100 dark:border-slate-800 ${getRowClasses(getColorIdFromClass(rowBgColor))}`}
+                                    onClick={() => openExerciseEditor(rowIndex, exercise)}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 rounded-lg bg-white/20">
+                                            <Dumbbell className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-sm">{exercise}</div>
+                                            {(targetReps || exerciseWorkoutType) && (
+                                                <div className="flex gap-1 mt-0.5">
+                                                    {targetReps && <span className="text-[10px] opacity-80 bg-black/10 px-1 rounded">{targetReps}</span>}
+                                                    {exerciseWorkoutType && <span className="text-[10px] opacity-80 bg-black/10 px-1 rounded">{exerciseWorkoutType}</span>}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="text-xs font-medium px-2 py-1 bg-white/20 rounded opacity-80">Düzenle</div>
+                                </div>
+
+                                {/* Data Input Cell */}
+                                <div className="relative">
+                                    <textarea
+                                        disabled={isMismatch}
+                                        value={gridData[cellKey] || ''}
+                                        onChange={(e) => onCellChange(activeWeek.id, cellKey, e.target.value)}
+                                        placeholder={isMismatch ? 'Bu gün için uygun değil' : `${exercise} detayları...`}
+                                        className={`w-full min-h-[120px] p-4 text-base resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset ${isMismatch ? getDisabledCellClasses(getColorIdFromClass(day.color)) : getCellClasses(getColorIdFromClass(day.color))}`}
+                                    />
+
+                                    {!isMismatch && (
+                                        <div className="absolute bottom-3 right-3 opacity-50">
+                                            <Copy className="w-4 h-4" />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+
+                    <button
+                        onClick={openNewExerciseModal}
+                        className="w-full py-4 border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-2xl flex items-center justify-center gap-2 text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-all group"
+                    >
+                        <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <Plus className="w-6 h-6" />
+                        </div>
+                        <span className="font-medium">Yeni Egzersiz Ekle</span>
+                    </button>
+
+                    {/* Padding for bottom scrolling */}
+                    <div className="h-8"></div>
+                </div>
             </div>
 
             {/* EXERCISE EDITOR MODAL */}

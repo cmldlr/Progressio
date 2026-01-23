@@ -30,11 +30,11 @@ export default function LandingPage() {
             </nav>
 
             {/* Hero Section */}
-            <section className="relative pt-20 pb-32 overflow-hidden">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-indigo-50/50 rounded-full blur-3xl -z-10" />
+            <section className="relative pt-32 pb-20 md:pt-20 md:pb-32 overflow-hidden">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-indigo-50/50 dark:bg-indigo-900/10 rounded-full blur-3xl -z-10" />
 
                 <div className="container mx-auto px-4 text-center">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-full text-sm font-medium mb-8">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full text-sm font-medium mb-8 border border-indigo-100 dark:border-indigo-800">
                         <span className="relative flex h-2 w-2">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
@@ -42,27 +42,27 @@ export default function LandingPage() {
                         v2.3 Yayında: Bulut Senkronizasyonu
                     </div>
 
-                    <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 tracking-tight">
+                    <h1 className="text-4xl md:text-7xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight leading-tight">
                         Antrenmanlarını <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
                             Akıllıca Yönet
                         </span>
                     </h1>
 
-                    <p className="text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed">
+                    <p className="text-lg md:text-xl text-gray-500 dark:text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed px-4">
                         Progressio ile gelişimini takip et, antrenman programını planla ve hedeflerine ulaş.
                         Artık tüm cihazlarında senkronize.
                     </p>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 px-4">
                         <button
                             onClick={() => setShowAuth(true)}
-                            className="w-full sm:w-auto px-8 py-4 bg-gray-900 text-white rounded-2xl font-semibold hover:bg-gray-800 transition flex items-center justify-center gap-2 group"
+                            className="w-full sm:w-auto px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl font-semibold hover:bg-gray-800 dark:hover:bg-gray-100 transition flex items-center justify-center gap-2 group shadow-xl shadow-indigo-500/10"
                         >
                             Hemen Başla
                             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </button>
-                        <button className="w-full sm:w-auto px-8 py-4 bg-white text-gray-700 border border-gray-200 rounded-2xl font-semibold hover:bg-gray-50 transition">
+                        <button className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-slate-700 rounded-2xl font-semibold hover:bg-gray-50 dark:hover:bg-slate-700 transition">
                             Detaylı Bilgi
                         </button>
                     </div>
@@ -160,12 +160,12 @@ export default function LandingPage() {
 
 function FeatureCard({ icon, title, desc }) {
     return (
-        <div className="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-            <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center mb-6">
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-gray-100 dark:border-slate-800 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <div className="w-12 h-12 bg-gray-50 dark:bg-slate-800 rounded-xl flex items-center justify-center mb-6">
                 {icon}
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-3">{title}</h3>
-            <p className="text-gray-500 leading-relaxed">{desc}</p>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3">{title}</h3>
+            <p className="text-gray-500 dark:text-gray-400 leading-relaxed">{desc}</p>
         </div>
     );
 }
