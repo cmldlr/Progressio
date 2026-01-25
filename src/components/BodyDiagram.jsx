@@ -123,10 +123,10 @@ export default function BodyDiagram({ selectedMuscles = [], onToggleMuscle, musc
                 </button>
             </div>
 
-            {/* Body Container - 265:532 oranında (1:2) */}
+            {/* Body Container - Responsive, aspect ratio korunuyor */}
             <div
-                className="relative select-none"
-                style={{ width: '265px', height: '532px' }}
+                className="relative select-none w-full max-w-[220px] sm:max-w-[265px]"
+                style={{ aspectRatio: '265 / 532' }}
             >
                 {/* Hover Label */}
                 {hoveredMuscle && regions[hoveredMuscle] && (

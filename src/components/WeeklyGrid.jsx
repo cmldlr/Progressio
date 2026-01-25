@@ -425,20 +425,20 @@ export default function WeeklyGrid({
                                     onClick={() => openExerciseEditor(rowIndex, exercise)}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 rounded-lg bg-white/20">
+                                        <div className="p-2 rounded-lg bg-black/5 dark:bg-white/10 text-gray-700 dark:text-white">
                                             <Dumbbell className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <div className="font-bold text-sm">{exercise}</div>
+                                            <div className="font-bold text-sm text-gray-900 dark:text-white">{exercise}</div>
                                             {(targetReps || exerciseWorkoutType) && (
                                                 <div className="flex gap-1 mt-0.5">
-                                                    {targetReps && <span className="text-[10px] opacity-80 bg-black/10 px-1 rounded">{targetReps}</span>}
-                                                    {exerciseWorkoutType && <span className="text-[10px] opacity-80 bg-black/10 px-1 rounded">{exerciseWorkoutType}</span>}
+                                                    {targetReps && <span className="text-[10px] opacity-80 bg-black/5 dark:bg-black/20 px-1 rounded text-gray-700 dark:text-gray-300">{targetReps}</span>}
+                                                    {exerciseWorkoutType && <span className="text-[10px] opacity-80 bg-black/5 dark:bg-black/20 px-1 rounded text-gray-700 dark:text-gray-300">{exerciseWorkoutType}</span>}
                                                 </div>
                                             )}
                                         </div>
                                     </div>
-                                    <div className="text-xs font-medium px-2 py-1 bg-white/20 rounded opacity-80">Düzenle</div>
+                                    <div className="text-xs font-bold px-3 py-1.5 bg-black/5 dark:bg-white/10 rounded-md text-gray-700 dark:text-white hover:bg-black/10 dark:hover:bg-white/20 transition-colors">Düzenle</div>
                                 </div>
 
                                 {/* Data Input Cell */}
