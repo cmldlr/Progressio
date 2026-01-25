@@ -21,7 +21,8 @@ export default function LandingPage() {
                     <div>
                         <button
                             onClick={() => setShowAuth(true)}
-                            className="bg-indigo-600 text-white px-5 py-2 rounded-full font-medium hover:bg-indigo-700 transition shadow-lg shadow-indigo-200"
+                            style={{ backgroundColor: '#4f46e5', color: 'white' }}
+                            className="px-5 py-2 rounded-full font-medium hover:opacity-90 transition shadow-lg"
                         >
                             Giriş Yap
                         </button>
@@ -57,7 +58,8 @@ export default function LandingPage() {
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 px-4">
                         <button
                             onClick={() => setShowAuth(true)}
-                            className="w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white rounded-2xl font-semibold hover:bg-indigo-700 transition flex items-center justify-center gap-2 group shadow-xl shadow-indigo-500/30"
+                            style={{ backgroundColor: '#4f46e5', color: 'white' }}
+                            className="w-full sm:w-auto px-8 py-4 rounded-2xl font-semibold hover:opacity-90 transition flex items-center justify-center gap-2 group shadow-xl"
                         >
                             Hemen Başla
                             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

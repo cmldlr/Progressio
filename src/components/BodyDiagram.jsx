@@ -66,19 +66,27 @@ export default function BodyDiagram({ selectedMuscles = [], onToggleMuscle, musc
     const renderMuscleRegion = (muscleId, region) => {
         const isSelected = selectedMuscles.includes(muscleId);
         const isHovered = hoveredMuscle === muscleId;
-        const style = getMuscleStyle(isSelected, isHovered);
 
         const createRegion = (x, key) => (
             <div
                 key={key}
-                className={`absolute cursor-pointer transition-all duration-200 rounded ${style}`}
                 style={{
                     left: `${x - region.width / 2}%`,
                     top: `${region.y - region.height / 2}%`,
                     width: `${region.width}%`,
                     height: `${region.height}%`,
+                    backgroundColor: isSelected ? 'rgba(99, 102, 241, 0.5)' : isHovered ? 'rgba(96, 165, 250, 0.4)' : 'transparent',
+                    border: isSelected ? '2px solid #6366f1' : isHovered ? '2px solid #60a5fa' : 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    position: 'absolute',
+                    touchAction: 'manipulation',
+                    minWidth: '30px',
+                    minHeight: '30px',
                 }}
                 onClick={(e) => { e.stopPropagation(); onToggleMuscle(muscleId); }}
+                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); onToggleMuscle(muscleId); }}
                 onMouseEnter={() => setHoveredMuscle(muscleId)}
                 onMouseLeave={() => setHoveredMuscle(null)}
             />

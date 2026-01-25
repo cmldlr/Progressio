@@ -315,4 +315,35 @@ export const extractColorId = (colorInput) => {
     return 'gray';
 };
 
+// Inline style helpers for mobile compatibility
+const COLOR_HEX_MAP = {
+    gray: { bg: '#f3f4f6', text: '#111827', border: '#e5e7eb', darkBg: '#1e293b', darkText: '#f3f4f6' },
+    red: { bg: '#fee2e2', text: '#991b1b', border: '#fecaca', darkBg: '#450a0a', darkText: '#fef2f2' },
+    blue: { bg: '#dbeafe', text: '#1e40af', border: '#bfdbfe', darkBg: '#172554', darkText: '#eff6ff' },
+    green: { bg: '#d1fae5', text: '#065f46', border: '#a7f3d0', darkBg: '#022c22', darkText: '#ecfdf5' },
+    yellow: { bg: '#fef3c7', text: '#92400e', border: '#fde68a', darkBg: '#451a03', darkText: '#fffbeb' },
+    purple: { bg: '#ede9fe', text: '#5b21b6', border: '#ddd6fe', darkBg: '#2e1065', darkText: '#f5f3ff' },
+    orange: { bg: '#ffedd5', text: '#9a3412', border: '#fed7aa', darkBg: '#431407', darkText: '#fff7ed' },
+};
+
+export const getHeaderInlineStyle = (colorId, isDark = false) => {
+    const colors = COLOR_HEX_MAP[colorId] || COLOR_HEX_MAP.gray;
+    return {
+        backgroundColor: isDark ? colors.darkBg : colors.bg,
+        color: isDark ? colors.darkText : colors.text,
+        borderColor: colors.border,
+    };
+};
+
+export const getRowInlineStyle = (colorId, isDark = false) => {
+    const colors = COLOR_HEX_MAP[colorId] || COLOR_HEX_MAP.gray;
+    return {
+        backgroundColor: isDark ? colors.darkBg : colors.bg,
+        color: isDark ? colors.darkText : colors.text,
+        borderLeftColor: colors.border,
+        borderLeftWidth: '4px',
+    };
+};
+
 export default THEME_COLORS;
+

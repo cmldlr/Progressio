@@ -40,7 +40,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
             <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-200 dark:border-slate-800 my-auto">
                 {/* Header */}
-                <div className="bg-indigo-600 p-6 text-white relative">
+                <div style={{ backgroundColor: '#4f46e5' }} className="p-6 text-white relative">
                     <h2 className="text-2xl font-bold text-center">
                         {mode === 'login' ? '🏋️ Giriş Yap' : '🎯 Kayıt Ol'}
                     </h2>
@@ -103,7 +103,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/20"
+                        style={{ backgroundColor: loading ? '#9ca3af' : '#4f46e5', color: 'white' }}
+                        className="w-full py-3 rounded-lg font-semibold transition disabled:cursor-not-allowed shadow-lg"
                     >
                         {loading ? (
                             <span className="flex items-center justify-center gap-2">
