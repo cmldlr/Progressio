@@ -111,18 +111,42 @@ export default function ExerciseEditor({
 
     return createPortal(
         <div
-            className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4"
+            style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 100,
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                padding: 0
+            }}
             onClick={onClose}
         >
             {/* Modal Container - Mobilde tam ekran, masaüstünde normal */}
             <div
-                className="bg-white dark:bg-slate-900 w-full sm:max-w-2xl sm:rounded-2xl shadow-2xl flex flex-col border-0 sm:border border-gray-100 dark:border-slate-800 max-h-[100dvh] sm:max-h-[85vh] rounded-t-3xl sm:rounded-2xl"
+                style={{
+                    backgroundColor: '#ffffff',
+                    width: '100%',
+                    maxWidth: '42rem',
+                    borderTopLeftRadius: '24px',
+                    borderTopRightRadius: '24px',
+                    boxShadow: '0 -10px 40px rgba(0, 0, 0, 0.2)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    maxHeight: '100dvh',
+                    overflow: 'hidden'
+                }}
+                className="sm:rounded-2xl sm:max-h-[85vh] sm:m-4"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header - Sticky */}
-                <div className="flex-shrink-0 px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-t-2xl">
+                <div
+                    style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #f3f4f6', borderTopLeftRadius: '24px', borderTopRightRadius: '24px' }}
+                    className="flex-shrink-0 px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4"
+                >
                     {/* Mobile drag handle */}
-                    <div className="w-10 h-1 bg-gray-300 dark:bg-slate-600 rounded-full mx-auto mb-3 sm:hidden" />
+                    <div style={{ width: '40px', height: '4px', backgroundColor: '#d1d5db', borderRadius: '9999px', margin: '0 auto 12px auto' }} className="sm:hidden" />
 
                     {/* Title */}
                     <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3">
@@ -148,8 +172,8 @@ export default function ExerciseEditor({
                                                                 c.id === 'orange' ? '#f97316' : '#6b7280'
                                     }}
                                     className={`w-8 h-8 rounded-lg border-2 transition-all flex-shrink-0 ${selectedColor === c.id
-                                            ? 'ring-2 ring-indigo-500 ring-offset-2 scale-110 border-white'
-                                            : 'border-white/50 hover:scale-105'
+                                        ? 'ring-2 ring-indigo-500 ring-offset-2 scale-110 border-white'
+                                        : 'border-white/50 hover:scale-105'
                                         }`}
                                 />
                             ))}
@@ -158,8 +182,8 @@ export default function ExerciseEditor({
                 </div>
 
                 {/* Scrollable Content Area */}
-                <div className="flex-1 overflow-y-auto overscroll-contain">
-                    <div className="px-4 sm:px-6 py-4 space-y-4">
+                <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#ffffff' }}>
+                    <div style={{ padding: '16px' }} className="space-y-4">
 
                         {/* Egzersiz İsmi */}
                         <div ref={inputRef}>
@@ -175,7 +199,16 @@ export default function ExerciseEditor({
                                 }}
                                 onFocus={() => setIsComboboxOpen(true)}
                                 onBlur={() => setTimeout(() => setIsComboboxOpen(false), 150)}
-                                className="w-full px-4 py-3 text-base bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition dark:text-white"
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 16px',
+                                    fontSize: '16px',
+                                    backgroundColor: '#f9fafb',
+                                    border: '1px solid #e5e7eb',
+                                    borderRadius: '12px',
+                                    outline: 'none',
+                                    color: '#111827'
+                                }}
                                 placeholder="Örn: Bench Press"
                                 autoComplete="off"
                             />
@@ -345,11 +378,22 @@ export default function ExerciseEditor({
                 </div>
 
                 {/* Footer - Sticky */}
-                <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2 sm:gap-3 safe-area-inset-bottom">
+                <div
+                    style={{
+                        flexShrink: 0,
+                        padding: '12px 16px',
+                        borderTop: '1px solid #e5e7eb',
+                        backgroundColor: '#ffffff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        paddingBottom: 'max(12px, env(safe-area-inset-bottom))'
+                    }}
+                >
                     {!isNew && onDelete && (
                         <button
                             onClick={onDelete}
-                            className="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition"
+                            style={{ padding: '10px', color: '#ef4444', borderRadius: '12px' }}
                             title="Sil"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -358,18 +402,34 @@ export default function ExerciseEditor({
                         </button>
                     )}
 
-                    <div className="flex-1" />
+                    <div style={{ flex: 1 }} />
 
                     <button
                         onClick={onClose}
-                        className="px-4 sm:px-5 py-2.5 text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition font-medium text-sm"
+                        style={{
+                            padding: '10px 16px',
+                            color: '#4b5563',
+                            borderRadius: '12px',
+                            fontWeight: 500,
+                            fontSize: '14px',
+                            backgroundColor: 'transparent'
+                        }}
                     >
                         İptal
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={!name.trim()}
-                        className="px-5 sm:px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl transition font-semibold text-sm shadow-lg shadow-indigo-600/20"
+                        style={{
+                            padding: '10px 20px',
+                            backgroundColor: name.trim() ? '#4f46e5' : '#d1d5db',
+                            color: 'white',
+                            borderRadius: '12px',
+                            fontWeight: 600,
+                            fontSize: '14px',
+                            boxShadow: '0 4px 6px -1px rgba(79, 70, 229, 0.2)',
+                            cursor: name.trim() ? 'pointer' : 'not-allowed'
+                        }}
                     >
                         {isNew ? 'Ekle' : 'Kaydet'}
                     </button>

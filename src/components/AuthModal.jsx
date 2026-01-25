@@ -37,8 +37,30 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-200 dark:border-slate-800 my-auto">
+        <div
+            style={{
+                position: 'fixed',
+                inset: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 50,
+                padding: '16px',
+                overflowY: 'auto'
+            }}
+        >
+            <div
+                style={{
+                    backgroundColor: '#ffffff',
+                    borderRadius: '16px',
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                    width: '100%',
+                    maxWidth: '28rem',
+                    overflow: 'hidden',
+                    border: '1px solid #e5e7eb'
+                }}
+            >
                 {/* Header */}
                 <div style={{ backgroundColor: '#4f46e5' }} className="p-6 text-white relative">
                     <h2 className="text-2xl font-bold text-center">
