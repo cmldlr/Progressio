@@ -8,13 +8,13 @@ export default function LandingPage() {
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300">
             {/* Navbar */}
-            <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+            <nav className="border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 backdrop-blur-md sticky top-0 z-50">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
                             P
                         </div>
-                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                        <span className="text-xl font-bold text-indigo-600">
                             Progressio
                         </span>
                     </div>
@@ -44,7 +44,7 @@ export default function LandingPage() {
 
                     <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight leading-tight">
                         Antrenmanlarını <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+                        <span className="text-indigo-600">
                             Akıllıca Yönet
                         </span>
                     </h1>
@@ -57,7 +57,7 @@ export default function LandingPage() {
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 px-4">
                         <button
                             onClick={() => setShowAuth(true)}
-                            className="w-full sm:w-auto px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl font-semibold hover:bg-gray-800 dark:hover:bg-gray-100 transition flex items-center justify-center gap-2 group shadow-xl shadow-indigo-500/10"
+                            className="w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white rounded-2xl font-semibold hover:bg-indigo-700 transition flex items-center justify-center gap-2 group shadow-xl shadow-indigo-500/30"
                         >
                             Hemen Başla
                             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

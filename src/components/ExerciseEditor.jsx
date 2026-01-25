@@ -124,24 +124,33 @@ export default function ExerciseEditor({
                     {/* Mobile drag handle */}
                     <div className="w-10 h-1 bg-gray-300 dark:bg-slate-600 rounded-full mx-auto mb-3 sm:hidden" />
 
-                    <div className="flex justify-between items-start gap-3">
-                        <div className="flex-1 min-w-0">
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white truncate">
-                                {isNew ? 'Yeni Egzersiz' : 'Egzersiz Düzenle'}
-                            </h3>
-                            <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400 mt-0.5 hidden sm:block">
-                                {isNew ? 'Programınıza yeni bir hareket ekleyin' : 'Detayları güncelleyin'}
-                            </p>
-                        </div>
+                    {/* Title */}
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3">
+                        {isNew ? 'Yeni Egzersiz' : 'Egzersiz Düzenle'}
+                    </h3>
 
-                        {/* Renk seçici - Compact */}
-                        <div className="flex gap-1 p-1 bg-gray-100 dark:bg-slate-800 rounded-lg flex-shrink-0">
-                            {COLOR_OPTIONS.slice(0, 6).map((c) => (
+                    {/* Renk seçici - Mobilde scroll edilebilir yatay liste */}
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                        <span className="text-xs font-medium text-gray-500 dark:text-slate-400 flex-shrink-0">Renk:</span>
+                        <div className="flex gap-2 flex-shrink-0">
+                            {COLOR_OPTIONS.map((c) => (
                                 <button
                                     key={c.id}
                                     onClick={() => setSelectedColor(c.id)}
                                     title={c.label}
-                                    className={`w-5 h-5 sm:w-6 sm:h-6 rounded-md border-2 transition-all ${getPreviewClasses(c.id)} ${selectedColor === c.id ? 'ring-2 ring-indigo-500 ring-offset-1 scale-110' : 'hover:scale-105 border-transparent'}`}
+                                    style={{
+                                        backgroundColor: c.id === 'gray' ? '#9ca3af' :
+                                            c.id === 'red' ? '#ef4444' :
+                                                c.id === 'blue' ? '#3b82f6' :
+                                                    c.id === 'green' ? '#10b981' :
+                                                        c.id === 'yellow' ? '#f59e0b' :
+                                                            c.id === 'purple' ? '#8b5cf6' :
+                                                                c.id === 'orange' ? '#f97316' : '#6b7280'
+                                    }}
+                                    className={`w-8 h-8 rounded-lg border-2 transition-all flex-shrink-0 ${selectedColor === c.id
+                                            ? 'ring-2 ring-indigo-500 ring-offset-2 scale-110 border-white'
+                                            : 'border-white/50 hover:scale-105'
+                                        }`}
                                 />
                             ))}
                         </div>

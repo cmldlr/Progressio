@@ -2,13 +2,64 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Safe Area Insets for iOS notch/home bar */
+html {
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
 body {
     background-color: #f9fafb;
     color: #111827;
     transition: background-color 0.3s ease, color 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .dark body {
     background-color: #020617;
     color: #f3f4f6;
+}
+
+/* iOS Momentum Scroll */
+.channel-list-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* Touch manipulation for better mobile experience */
+button,
+a,
+input,
+select,
+textarea {
+    touch-action: manipulation;
+}
+
+/* Safe area bottom padding utility */
+.safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Hide scrollbar but keep functionality */
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Fix for backdrop-blur on some mobile browsers */
+@supports not (backdrop-filter: blur(10px)) {
+
+    .backdrop-blur-sm,
+    .backdrop-blur-md {
+        background-color: rgba(255, 255, 255, 0.95);
+    }
+
+    .dark .backdrop-blur-sm,
+    .dark .backdrop-blur-md {
+        background-color: rgba(15, 23, 42, 0.95);
+    }
 }
