@@ -254,8 +254,8 @@ export default function WeeklyGrid({
                 </div>
             </div>
 
-            {/* Desktop View (Hidden on Mobile) */}
-            <div className="hidden md:block overflow-x-auto shadow-xl rounded-xl border border-gray-200 dark:border-slate-800 transition-colors">
+            {/* Desktop View (Hidden on Mobile/Tablet) */}
+            <div className="hidden lg:block overflow-x-auto shadow-xl rounded-xl border border-gray-200 dark:border-slate-800 transition-colors">
                 <table className="min-w-full border-collapse bg-white dark:bg-slate-950">
                     <thead>
                         <tr>
@@ -361,8 +361,8 @@ export default function WeeklyGrid({
                 </table>
             </div>
 
-            {/* Mobile View (< md) - "Day View" */}
-            <div className="md:hidden flex flex-col h-full bg-gray-50 dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 overflow-hidden">
+            {/* Mobile/Tablet View (< lg) - "Day View" */}
+            <div className="lg:hidden flex flex-col h-full bg-gray-50 dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 overflow-hidden">
                 {/* Mobile Day Navigation Header */}
                 <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
                     <div className="flex items-center justify-between p-3">

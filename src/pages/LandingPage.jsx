@@ -6,7 +6,7 @@ export default function LandingPage() {
     const [showAuth, setShowAuth] = useState(false);
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300">
             {/* Navbar */}
             <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -42,7 +42,7 @@ export default function LandingPage() {
                         v2.3 Yayında: Bulut Senkronizasyonu
                     </div>
 
-                    <h1 className="text-4xl md:text-7xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight leading-tight">
+                    <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight leading-tight">
                         Antrenmanlarını <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
                             Akıllıca Yönet
