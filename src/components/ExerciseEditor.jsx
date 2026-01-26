@@ -126,7 +126,6 @@ export default function ExerciseEditor({
             {/* Modal Container - Mobilde tam ekran, masaüstünde normal */}
             <div
                 style={{
-                    backgroundColor: '#ffffff',
                     width: '100%',
                     maxWidth: '42rem',
                     borderTopLeftRadius: '24px',
@@ -137,13 +136,13 @@ export default function ExerciseEditor({
                     maxHeight: '100dvh',
                     overflow: 'hidden'
                 }}
-                className="sm:rounded-2xl sm:max-h-[85vh] sm:m-4"
+                className="bg-white dark:bg-slate-900 sm:rounded-2xl sm:max-h-[85vh] sm:m-4 transition-colors"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header - Sticky */}
                 <div
-                    style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #f3f4f6', borderTopLeftRadius: '24px', borderTopRightRadius: '24px' }}
-                    className="flex-shrink-0 px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4"
+                    style={{ borderBottom: '1px solid #f3f4f6', borderTopLeftRadius: '24px', borderTopRightRadius: '24px' }}
+                    className="flex-shrink-0 px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 bg-white dark:bg-slate-900 dark:border-slate-800 transition-colors"
                 >
                     {/* Mobile drag handle */}
                     <div style={{ width: '40px', height: '4px', backgroundColor: '#d1d5db', borderRadius: '9999px', margin: '0 auto 12px auto' }} className="sm:hidden" />
@@ -182,7 +181,7 @@ export default function ExerciseEditor({
                 </div>
 
                 {/* Scrollable Content Area */}
-                <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#ffffff' }}>
+                <div style={{ flex: 1, overflowY: 'auto' }} className="bg-white dark:bg-slate-900 transition-colors">
                     <div style={{ padding: '16px' }} className="space-y-4">
 
                         {/* Egzersiz İsmi */}
@@ -382,13 +381,12 @@ export default function ExerciseEditor({
                     style={{
                         flexShrink: 0,
                         padding: '12px 16px',
-                        borderTop: '1px solid #e5e7eb',
-                        backgroundColor: '#ffffff',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
                         paddingBottom: 'max(12px, env(safe-area-inset-bottom))'
                     }}
+                    className="bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 transition-colors"
                 >
                     {!isNew && onDelete && (
                         <button

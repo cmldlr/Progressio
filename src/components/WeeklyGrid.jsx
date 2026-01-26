@@ -377,8 +377,7 @@ export default function WeeklyGrid({
                         </button>
 
                         <div
-                            style={getHeaderInlineStyle(getColorIdFromClass(days[mobileDayIndex]?.color))}
-                            className="flex flex-col items-center flex-1 max-w-[200px] py-1.5 px-4 rounded-xl transition-colors cursor-pointer"
+                            className={`flex flex-col items-center flex-1 max-w-[200px] py-1.5 px-4 rounded-xl transition-colors cursor-pointer ${getHeaderClasses(getColorIdFromClass(days[mobileDayIndex]?.color))}`}
                             onClick={() => openDayEditor(days[mobileDayIndex], mobileDayIndex)}
                         >
                             <span className="text-xs font-semibold opacity-70 uppercase tracking-wider mb-0.5">

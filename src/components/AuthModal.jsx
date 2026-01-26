@@ -52,14 +52,11 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         >
             <div
                 style={{
-                    backgroundColor: '#ffffff',
-                    borderRadius: '16px',
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
                     width: '100%',
                     maxWidth: '28rem',
                     overflow: 'hidden',
-                    border: '1px solid #e5e7eb'
                 }}
+                className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 transition-colors"
             >
                 {/* Header */}
                 <div style={{ backgroundColor: '#4f46e5' }} className="p-6 text-white relative">
