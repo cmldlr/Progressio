@@ -74,7 +74,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                     options: {
                         data: {
                             username: validUsername
-                        }
+                        },
+                        emailRedirectTo: window.location.origin
                     }
                 });
 
