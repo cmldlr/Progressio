@@ -116,6 +116,7 @@ export function useWorkoutData() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [syncStatus, setSyncStatus] = useState('idle'); // 'idle' | 'syncing' | 'synced' | 'error'
+    const [syncError, setSyncError] = useState(null); // Detailed error message
     const saveTimeoutRef = useRef(null);
 
     // Kullanıcı durumunu izle
@@ -132,6 +133,7 @@ export function useWorkoutData() {
             if (event === 'SIGNED_OUT') {
                 // Çıkış yapıldığında localStorage'a geri dön
                 setSyncStatus('idle');
+                setSyncError(null);
             }
         });
 
@@ -141,27 +143,45 @@ export function useWorkoutData() {
     // Kullanıcı giriş yaptığında Supabase'den veri çek
     useEffect(() => {
         const loadFromSupabase = async () => {
-            if (!user || !supabase) return;
+            if (!user) return;
+
+            // Supabase client check
+            if (!supabase) {
+                setSyncStatus('error');
+                setSyncError('Supabase bağlantısı (URL/Key) eksik.');
+                return;
+            }
 
             try {
                 setSyncStatus('syncing');
+                setSyncError(null);
                 const dbData = await workoutDB.getData(user.id);
 
                 if (dbData) {
                     const transformedData = transformSupabaseData(dbData);
                     setData(transformedData);
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(transformedData));
+                    setSyncStatus('synced');
                 } else {
                     // İlk kez giriş yapıyorsa, mevcut localStorage verisini Supabase'e kaydet
                     const localData = loadFromLocalStorage();
                     if (localData) {
-                        await workoutDB.upsertData(user.id, localData);
+                        try {
+                            await workoutDB.upsertData(user.id, localData);
+                            setSyncStatus('synced');
+                        } catch (saveErr) {
+                            console.error('Initial sync failed:', saveErr);
+                            setSyncStatus('error');
+                            setSyncError(`İlk senkronizasyon hatası: ${saveErr.message || saveErr.code}`);
+                        }
+                    } else {
+                        setSyncStatus('synced'); // Data yok, synced sayılır
                     }
                 }
-                setSyncStatus('synced');
             } catch (error) {
                 console.error('Supabase sync error:', error);
                 setSyncStatus('error');
+                setSyncError(`Veri çekilemedi: ${error.message || error.code || 'Bilinmeyen hata'}`);
             }
         };
 
@@ -174,7 +194,13 @@ export function useWorkoutData() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
 
         // Supabase'e debounced kaydet
-        if (user && supabase) {
+        if (user) {
+            if (!supabase) {
+                setSyncStatus('error');
+                setSyncError('Supabase bağlantısı eksik.');
+                return;
+            }
+
             if (saveTimeoutRef.current) {
                 clearTimeout(saveTimeoutRef.current);
             }
@@ -184,9 +210,11 @@ export function useWorkoutData() {
                 try {
                     await workoutDB.upsertData(user.id, newData);
                     setSyncStatus('synced');
+                    setSyncError(null);
                 } catch (error) {
                     console.error('Save to Supabase failed:', error);
                     setSyncStatus('error');
+                    setSyncError(`Kaydedilemedi: ${error.message || error.code}`);
                 }
             }, 1000); // 1 saniye bekle
         }
@@ -459,6 +487,7 @@ export function useWorkoutData() {
         user,
         loading,
         syncStatus,
+        syncError,
         signOut: auth.signOut
     };
 }

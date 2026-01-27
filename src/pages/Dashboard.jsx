@@ -6,7 +6,7 @@ import { useWorkoutData } from '../hooks/useWorkoutData';
 import { LogOut, Settings, Upload, Download, RefreshCw, Menu, Calendar, Clock, Filter, Moon, Sun } from 'lucide-react';
 
 export default function Dashboard() {
-    const { data, activeWeek, actions, user, loading, syncStatus, signOut } = useWorkoutData();
+    const { data, activeWeek, actions, user, loading, syncStatus, syncError, signOut } = useWorkoutData();
     const [showSettings, setShowSettings] = useState(false);
 
     // Anlık Tarih/Saat State'i
@@ -78,17 +78,23 @@ export default function Dashboard() {
             idle: { icon: 'check-circle', color: 'text-gray-400', label: 'Hazır' },
             syncing: { icon: 'refresh-ccw', color: 'text-blue-500 animate-spin', label: 'Senkronize...' },
             synced: { icon: 'check-circle', color: 'text-green-500', label: 'Senkronize' },
-            error: { icon: 'alert-circle', color: 'text-red-500', label: 'Hata' }
+            error: { icon: 'alert-circle', color: 'text-red-500', label: syncError || 'Hata' }
         };
         const status = statusConfig[syncStatus] || statusConfig.idle;
 
         return (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 bg-opacity-70 dark:bg-slate-800 dark:bg-opacity-50 rounded-full border border-gray-200 dark:border-slate-700">
+            <div
+                className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 bg-opacity-70 dark:bg-slate-800 dark:bg-opacity-50 rounded-full border border-gray-200 dark:border-slate-700 cursor-help transition-all"
+                title={syncError || "Senkronizasyon Durumu"}
+                onClick={() => syncStatus === 'error' && alert(syncError)}
+            >
                 <span className={`w-2 h-2 rounded-full ${syncStatus === 'synced' ? 'bg-green-500' :
                     syncStatus === 'syncing' ? 'bg-blue-500' :
                         syncStatus === 'error' ? 'bg-red-500' : 'bg-gray-400'
                     } `} />
-                <span className="text-xs font-medium text-gray-600 dark:text-gray-400 hidden sm:inline">{status.label}</span>
+                <span className={`text-xs font-medium hidden sm:inline ${syncStatus === 'error' ? 'text-red-500' : 'text-gray-600 dark:text-gray-400'}`}>
+                    {status.label.length > 20 ? status.label.substring(0, 17) + '...' : status.label}
+                </span>
             </div>
         );
     };
@@ -108,7 +114,9 @@ export default function Dashboard() {
                             <span className="font-bold text-gray-900 dark:text-white hidden md:block text-lg tracking-tight">Progressio</span>
                         </div>
                         <div className="h-6 w-px bg-gray-200 dark:bg-slate-700 hidden md:block" />
-                        <div className="hidden md:block">
+
+                        {/* Sync Indicator - Visible on Mobile now */}
+                        <div className="flex md:block">
                             <SyncIndicator />
                         </div>
                     </div>

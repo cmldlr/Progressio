@@ -41,8 +41,23 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 });
 
                 if (error) throw error;
-                onAuthSuccess(data.user);
-                onClose();
+
+                let user = data?.user || data?.session?.user;
+
+                // Fallback: If user is missing but no error (rare race condition)
+                if (!user) {
+                    const { data: userData, error: userError } = await auth.getUser();
+                    if (!userError && userData?.user) {
+                        user = userData.user;
+                    }
+                }
+
+                if (user) {
+                    onAuthSuccess(user);
+                    onClose();
+                } else {
+                    throw new Error('Giriş başarılı fakat kullanıcı bilgisi alınamadı.');
+                }
 
             } else {
                 // SIGNUP MODE

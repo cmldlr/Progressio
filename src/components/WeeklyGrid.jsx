@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronLeft, ChevronRight, Dumbbell, Copy, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Dumbbell, Copy, Plus, Eye, EyeOff } from 'lucide-react';
 import ExerciseEditor from './ExerciseEditor';
 import {
     THEME_COLORS,
     COLOR_OPTIONS,
-    getHeaderClasses,
-    getRowClasses,
-    getCellClasses,
-    getDisabledCellClasses,
+    getHeaderStyles,
+    getRowStyles,
+    getCellStyles,
+    getDisabledCellStyles,
     extractColorId,
-    getPreviewClasses,
-    getHeaderInlineStyle,
-    getRowInlineStyle
+    getPreviewStyles // Updated import
 } from '../utils/themeColors';
 
 
@@ -49,6 +47,7 @@ export default function WeeklyGrid({
     // UI State
     const [filterType, setFilterType] = useState('All');
     const [filterMuscle, setFilterMuscle] = useState('All');
+    const [showAllExercises, setShowAllExercises] = useState(false); // Mobile: Show hidden exercises
 
     // Exercise Editor State
     const [editingExercise, setEditingExercise] = useState(null);
@@ -272,22 +271,27 @@ export default function WeeklyGrid({
                                     </button>
                                 </div>
                             </th>
-                            {days.map((day, index) => (
-                                <th
-                                    key={day.id || index}
-                                    className={`p-3 border-b border-r min-w-[120px] text-center cursor-pointer hover:brightness-105 dark:hover:brightness-110 transition resize-x overflow-hidden ${getHeaderClasses(getColorIdFromClass(day.color))}`}
-                                    style={{ resize: 'horizontal', overflow: 'hidden', minWidth: '120px', maxWidth: '300px' }}
-                                    onClick={() => openDayEditor(day, index)}
-                                    title="Türü ve rengi değiştirmek için tıklayın"
-                                >
-                                    <div className="font-bold text-sm">{day.label}</div>
-                                </th>
-                            ))}
+                            {days.map((day, index) => {
+                                const { className, style } = getHeaderStyles(getColorIdFromClass(day.color));
+                                return (
+                                    <th
+                                        key={day.id || index}
+                                        className={`p-3 border-b border-r min-w-[120px] text-center cursor-pointer hover:brightness-105 dark:hover:brightness-110 transition resize-x overflow-hidden ${className}`}
+                                        style={{ ...style, resize: 'horizontal', overflow: 'hidden', minWidth: '120px', maxWidth: '300px' }}
+                                        onClick={() => openDayEditor(day, index)}
+                                        title="Türü ve rengi değiştirmek için tıklayın"
+                                    >
+                                        <div className="font-bold text-sm">{day.label}</div>
+                                    </th>
+                                )
+                            })}
                         </tr>
                     </thead>
                     <tbody>
                         {visibleExercises.map(({ name: exercise, originalIndex: rowIndex }) => {
                             const rowBgColor = rowColors[rowIndex] || '';
+                            const { className: rowClass, style: rowStyle } = getRowStyles(getColorIdFromClass(rowBgColor));
+
                             const details = exerciseDetails[rowIndex] || {};
                             const exerciseMuscles = details.muscles || [];
                             const exerciseWorkoutType = details.workoutType || '';
@@ -296,7 +300,8 @@ export default function WeeklyGrid({
                             return (
                                 <tr key={rowIndex} className="border-b border-gray-100 dark:border-slate-800/50 hover:bg-gray-50 dark:hover:bg-slate-900/50 transition-colors group/row">
                                     <td
-                                        className={`p-3 border-r border-gray-200 dark:border-slate-800 font-semibold sticky left-0 z-10 shadow-sm text-sm relative group cursor-pointer ${getRowClasses(getColorIdFromClass(rowBgColor))} shadow-[4px_0_12px_-4px_rgba(0,0,0,0.1)]`}
+                                        className={`p-3 border-r border-gray-200 dark:border-slate-800 font-semibold sticky left-0 z-10 shadow-sm text-sm relative group cursor-pointer ${rowClass} shadow-[4px_0_12px_-4px_rgba(0,0,0,0.1)]`}
+                                        style={rowStyle}
                                         onClick={() => openExerciseEditor(rowIndex, exercise)}
                                         onContextMenu={(e) => handleContextMenu(e, rowIndex)}
                                     >
@@ -344,13 +349,20 @@ export default function WeeklyGrid({
                                             exerciseWorkoutType !== 'Full Body' &&
                                             exerciseWorkoutType.toLowerCase() !== day.type.toLowerCase();
 
+                                        // Dynamic Styles
+                                        const colorId = getColorIdFromClass(day.color);
+                                        const { className: cellClass, style: cellStyle } = isMismatch
+                                            ? getDisabledCellStyles(colorId)
+                                            : getCellStyles(colorId);
+
                                         return (
                                             <td key={day.id || index} className="p-0 border-r border-gray-200 dark:border-slate-800 relative align-top">
                                                 <textarea
                                                     disabled={isMismatch}
                                                     value={gridData[cellKey] || ''}
                                                     onChange={(e) => onCellChange(activeWeek.id, cellKey, e.target.value)}
-                                                    className={`w-full h-full min-h-[60px] p-2 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-all text-center text-sm font-medium resize-none overflow-hidden ${isMismatch ? getDisabledCellClasses(getColorIdFromClass(day.color)) : getCellClasses(getColorIdFromClass(day.color))}`}
+                                                    className={`w-full h-full min-h-[60px] p-2 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-all text-center text-sm font-medium resize-none overflow-hidden ${cellClass}`}
+                                                    style={cellStyle}
                                                     placeholder={isMismatch ? '' : '-'}
                                                 />
                                             </td>
@@ -376,16 +388,33 @@ export default function WeeklyGrid({
                             <ChevronLeft className="w-6 h-6" />
                         </button>
 
-                        <div
-                            className={`flex flex-col items-center flex-1 max-w-[200px] py-1.5 px-4 rounded-xl transition-colors cursor-pointer ${getHeaderClasses(getColorIdFromClass(days[mobileDayIndex]?.color))}`}
-                            onClick={() => openDayEditor(days[mobileDayIndex], mobileDayIndex)}
-                        >
-                            <span className="text-xs font-semibold opacity-70 uppercase tracking-wider mb-0.5">
-                                Gün {mobileDayIndex + 1} / 7
-                            </span>
-                            <span className="font-bold text-lg block truncate px-2">
-                                {days[mobileDayIndex]?.label}
-                            </span>
+                        <div className="flex flex-col items-center flex-1">
+                            {(() => {
+                                const { className, style } = getHeaderStyles(getColorIdFromClass(days[mobileDayIndex]?.color));
+                                return (
+                                    <div
+                                        className={`flex flex-col items-center max-w-[200px] py-1.5 px-4 rounded-xl transition-colors cursor-pointer ${className}`}
+                                        style={style}
+                                        onClick={() => openDayEditor(days[mobileDayIndex], mobileDayIndex)}
+                                    >
+                                        <span className="text-xs font-semibold opacity-70 uppercase tracking-wider mb-0.5">
+                                            Gün {mobileDayIndex + 1} / 7
+                                        </span>
+                                        <span className="font-bold text-lg block truncate px-2">
+                                            {days[mobileDayIndex]?.label}
+                                        </span>
+                                    </div>
+                                );
+                            })()}
+
+                            {/* Show All Toggle */}
+                            <button
+                                onClick={() => setShowAllExercises(!showAllExercises)}
+                                className={`mt-2 flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full transition-colors ${showAllExercises ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300' : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400'}`}
+                            >
+                                {showAllExercises ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                                {showAllExercises ? 'Tümü Açık' : 'Filtreli Görünüm'}
+                            </button>
                         </div>
 
                         <button
@@ -400,8 +429,29 @@ export default function WeeklyGrid({
 
                 {/* Mobile Exercises List */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px]">
-                    {visibleExercises.map(({ name: exercise, originalIndex: rowIndex }) => {
+                    {visibleExercises.filter(({ name: exercise, originalIndex: rowIndex }) => {
+                        // User Override: Show all if toggled
+                        if (showAllExercises) return true;
+
+                        // Smart Filtering Logic for Mobile
+                        const details = exerciseDetails[rowIndex] || {};
+                        const exerciseWorkoutType = details.workoutType || '';
+                        const day = days[mobileDayIndex];
+
+                        // Scenario 1: Day is "Mix" or "Off" -> Show Everything
+                        if (day.type === 'Mix') return true;
+                        if (!day.type) return true;
+
+                        // Scenario 2: Exercise is Universal ("Mix" or "Full Body") -> Show it on any day
+                        if (exerciseWorkoutType === 'Mix' || exerciseWorkoutType === 'Full Body' || !exerciseWorkoutType) return true;
+
+                        // Scenario 3: Strict Match
+                        return exerciseWorkoutType.toLowerCase() === day.type.toLowerCase();
+                    }).map(({ name: exercise, originalIndex: rowIndex }) => {
+                        // ... existing render logic ...
                         const rowBgColor = rowColors[rowIndex] || '';
+                        const { className: rowClass, style: rowStyle } = getRowStyles(getColorIdFromClass(rowBgColor));
+
                         const details = exerciseDetails[rowIndex] || {};
                         const exerciseMuscles = details.muscles || [];
                         const exerciseWorkoutType = details.workoutType || '';
@@ -410,20 +460,12 @@ export default function WeeklyGrid({
                         const day = days[mobileDayIndex];
                         const cellKey = `${rowIndex}-${day.id || mobileDayIndex}`;
 
-                        // Mismatch Logic (Same as Desktop)
-                        const isMismatch = exerciseWorkoutType &&
-                            day.type &&
-                            day.type !== 'Off' &&
-                            day.type !== 'Mix' &&
-                            exerciseWorkoutType !== 'Mix' &&
-                            exerciseWorkoutType !== 'Full Body' &&
-                            exerciseWorkoutType.toLowerCase() !== day.type.toLowerCase();
-
                         return (
                             <div key={rowIndex} className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden">
                                 {/* Header (Exercise Name) */}
                                 <div
-                                    className={`flex items-center justify-between p-3 border-b border-gray-100 dark:border-slate-800 ${getRowClasses(getColorIdFromClass(rowBgColor))}`}
+                                    className={`flex items-center justify-between p-3 border-b border-gray-100 dark:border-slate-800 ${rowClass}`}
+                                    style={rowStyle}
                                     onClick={() => openExerciseEditor(rowIndex, exercise)}
                                 >
                                     <div className="flex items-center gap-3">
@@ -445,23 +487,39 @@ export default function WeeklyGrid({
 
                                 {/* Data Input Cell */}
                                 <div className="relative">
-                                    <textarea
-                                        disabled={isMismatch}
-                                        value={gridData[cellKey] || ''}
-                                        onChange={(e) => onCellChange(activeWeek.id, cellKey, e.target.value)}
-                                        placeholder={isMismatch ? 'Bu gün için uygun değil' : `${exercise} detayları...`}
-                                        className={`w-full min-h-[120px] p-4 text-base resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset ${isMismatch ? getDisabledCellClasses(getColorIdFromClass(day.color)) : getCellClasses(getColorIdFromClass(day.color))}`}
-                                    />
-
-                                    {!isMismatch && (
-                                        <div className="absolute bottom-3 right-3 opacity-50">
-                                            <Copy className="w-4 h-4" />
-                                        </div>
-                                    )}
+                                    {(() => {
+                                        const { className, style } = getCellStyles(getColorIdFromClass(day.color));
+                                        return (
+                                            <textarea
+                                                value={gridData[cellKey] || ''}
+                                                onChange={(e) => onCellChange(activeWeek.id, cellKey, e.target.value)}
+                                                placeholder={`${exercise} detayları...`}
+                                                className={`w-full min-h-[120px] p-4 text-base resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset ${className}`}
+                                                style={style}
+                                            />
+                                        );
+                                    })()}
+                                    <div className="absolute bottom-3 right-3 opacity-50">
+                                        <Copy className="w-4 h-4" />
+                                    </div>
                                 </div>
                             </div>
                         );
                     })}
+
+                    {/* Hidden Exercises Summary (Optional - allowing user to see what's hidden if needed, or just pure hidden) */}
+                    <div className="text-center p-4">
+                        <p className="text-xs text-gray-400 dark:text-slate-600">
+                            {visibleExercises.length - visibleExercises.filter(({ name: exercise, originalIndex: rowIndex }) => {
+                                const details = exerciseDetails[rowIndex] || {};
+                                const exerciseWorkoutType = details.workoutType || '';
+                                const day = days[mobileDayIndex];
+                                if (!day.type || day.type === 'Off' || day.type === 'Mix') return true;
+                                if (exerciseWorkoutType === 'Mix' || exerciseWorkoutType === 'Full Body' || !exerciseWorkoutType) return true;
+                                return exerciseWorkoutType.toLowerCase() === day.type.toLowerCase();
+                            }).length} egzersiz bu günün antrenman tipiyle eşleşmediği için gizlendi.
+                        </p>
+                    </div>
 
                     <button
                         onClick={openNewExerciseModal}
@@ -497,55 +555,91 @@ export default function WeeklyGrid({
             {/* COLOR CONTEXT MENU PORTAL */}
             {contextMenu && createPortal(
                 <div
-                    className="fixed z-[9999] bg-white dark:bg-slate-800 shadow-xl border border-gray-200 dark:border-slate-700 rounded-lg p-2 w-44"
+                    className="fixed z-[9999] bg-white dark:bg-slate-800 shadow-xl border border-gray-200 dark:border-slate-700 rounded-lg p-2 w-48"
                     style={{ top: contextMenu.y, left: contextMenu.x }}
                     onClick={(e) => e.stopPropagation()}
                 >
                     <div className="text-xs font-bold text-gray-400 dark:text-slate-500 mb-1 px-2 border-b border-gray-100 dark:border-slate-700 pb-1">SATIR RENGİ</div>
-                    {COLOR_OPTIONS.map(c => (
-                        <button
-                            key={c.id}
-                            onClick={() => handleColorSelect(c.id)}
-                            className="text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2 w-full text-gray-700 dark:text-slate-300"
-                        >
-                            <span className={`w-4 h-4 rounded-full border border-gray-300 dark:border-slate-600 ${getPreviewClasses(c.id)}`}></span>
-                            {c.label}
-                        </button>
-                    ))}
+                    {/* Simplified Context Menu - Just open Editor? Or show simplified palette? 
+                        Let's keep it simple for now, using the new style helpers. 
+                    */}
+                    {['gray', 'red', 'blue', 'green', 'purple'].map(cId => {
+                        const { className, style } = getPreviewStyles(cId);
+                        return (
+                            <button
+                                key={cId}
+                                onClick={() => handleColorSelect(cId)}
+                                className="text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2 w-full text-gray-700 dark:text-slate-300"
+                            >
+                                <span className={`w-4 h-4 rounded-full border border-gray-300 dark:border-slate-600 ${className}`} style={style}></span>
+                                <span className="capitalize">{cId}</span>
+                            </button>
+                        )
+                    })}
+                    <button
+                        onClick={() => {
+                            // If we want to open the full picker, we might need a different UI flow.
+                            // For now, let's just fix the crash.
+                        }}
+                        className="text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2 w-full text-indigo-600 dark:text-indigo-400"
+                    >
+                        <Palette size={14} />
+                        <span>Detaylı Düzenle</span>
+                    </button>
                 </div>,
                 document.body
             )}
 
-            {/* DAY EDIT MODAL - SİMPLEŞTİRİLDİ */}
+            {/* DAY EDIT MODAL */}
             {editingDay && (
                 <Modal onClose={() => setEditingDay(null)}>
                     <div className="flex flex-col gap-4">
                         <div className="text-center">
                             <h3 className="text-xl font-bold text-gray-800 dark:text-white">{editingDay.label}</h3>
-                            <p className="text-xs text-gray-400 dark:text-slate-500">Bu gün için antrenman türü ve rengi seçin</p>
+                            <p className="text-xs text-gray-400 dark:text-slate-500">Antrenman türü ve rengini belirleyin</p>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
-                            {workoutColors && Object.entries(workoutColors).map(([className, config]) => {
-                                // Renk ID'sini çıkar (Düz isim veya Tailwind class)
-                                const colorId = THEME_COLORS[className] ? className : (className.match(/bg-(\w+)-\d+/)?.[1] || 'gray');
-
-                                return (
-                                    <button
-                                        key={config.label}
-                                        onClick={() => saveDayEditor({ value: className, type: config.type })}
-                                        className={`p-3 rounded-xl border-2 flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 ${getPreviewClasses(colorId)} ${editingDay.color === className ? 'border-indigo-600 dark:border-indigo-400 ring-2 ring-indigo-100 dark:ring-indigo-900/50' : 'border-transparent'}`}
-                                    >
-                                        {editingDay.color === className && <span className="text-xs">✓</span>}
-                                        <span className="font-semibold text-sm">{config.label}</span>
-                                        <span className="text-[10px] uppercase opacity-60 bg-white/50 dark:bg-black/20 px-1 rounded">{config.type}</span>
-                                    </button>
-                                );
-                            })}
+                        {/* Workout Type Selector */}
+                        <div className="flex flex-wrap gap-2 justify-center mb-2">
+                            {['Cardio', 'Strength', 'HIIT', 'Rest', 'Other'].map(type => (
+                                <button
+                                    key={type}
+                                    onClick={() => saveDayEditor({ ...editingDay, type: type })}
+                                    className={`px-3 py-1 text-sm rounded-full border transition-colors ${editingDay.type === type
+                                        ? 'bg-indigo-50 border-indigo-500 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                                        : 'border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-400'}`}
+                                >
+                                    {type}
+                                </button>
+                            ))}
                         </div>
 
-                        <div className="mt-2 text-center">
-                            <button onClick={() => setEditingDay(null)} className="text-xs text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-400 underline">Vazgeç</button>
+                        <div className="border-t border-gray-100 dark:border-slate-800 my-1"></div>
+
+                        {/* Custom Color Picker */}
+                        <CustomColorPicker
+                            color={editingDay.color?.startsWith('#') ? editingDay.color : '#3b82f6'}
+                            onChange={(newColor) => {
+                                // Real-time update or save? User likely wants to "Save" at the end.
+                                // But CustomColorPicker updates immediately.
+                                // Let's simplify: Updating editingDay state, then "Save" button commits.
+                                setEditingDay(prev => ({ ...prev, color: newColor }));
+                            }}
+                        />
+
+                        <div className="mt-4 flex gap-2">
+                            <button
+                                onClick={() => setEditingDay(null)}
+                                className="flex-1 px-4 py-2 text-sm text-gray-500 bg-gray-100 dark:bg-slate-800 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700"
+                            >
+                                İptal
+                            </button>
+                            <button
+                                onClick={() => saveDayEditor({ value: editingDay.color, type: editingDay.type || 'Other' })}
+                                className="flex-1 px-4 py-2 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-lg shadow-indigo-500/30"
+                            >
+                                Kaydet
+                            </button>
                         </div>
                     </div>
                 </Modal>

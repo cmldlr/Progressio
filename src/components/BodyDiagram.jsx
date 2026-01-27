@@ -86,7 +86,6 @@ export default function BodyDiagram({ selectedMuscles = [], onToggleMuscle, musc
                     minHeight: '30px',
                 }}
                 onClick={(e) => { e.stopPropagation(); onToggleMuscle(muscleId); }}
-                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); onToggleMuscle(muscleId); }}
                 onMouseEnter={() => setHoveredMuscle(muscleId)}
                 onMouseLeave={() => setHoveredMuscle(null)}
             />
