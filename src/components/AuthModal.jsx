@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { auth } from '../lib/supabaseClient';
+import { supabase, auth } from '../lib/supabaseClient';
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
     const [mode, setMode] = useState('login'); // 'login' | 'signup'
-    const [email, setEmail] = useState('');
+    const [email, setEmail] = useState(''); // Login modunda 'username' de tutabilir
+    const [username, setUsername] = useState(''); // Sadece signup için
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -19,21 +20,85 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
         try {
             if (mode === 'login') {
-                const data = await auth.signIn(email, password);
+                let loginIdentifier = email.trim(); // Email veya Username
+                let finalEmail = loginIdentifier;
+
+                // 1. Eğer email formatında değilse, username olarak kabul et ve email'ini bul
+                if (!loginIdentifier.includes('@')) {
+                    const { data: resolvedEmail, error: rpcError } = await supabase
+                        .rpc('get_email_by_username', { username_input: loginIdentifier });
+
+                    if (rpcError) throw rpcError;
+                    if (!resolvedEmail) throw new Error('Bu kullanıcı adı ile kayıtlı kullanıcı bulunamadı.');
+
+                    finalEmail = resolvedEmail;
+                }
+
+                // 2. Email ile giriş yap
+                const { data, error } = await auth.signInWithPassword({
+                    email: finalEmail,
+                    password: password
+                });
+
+                if (error) throw error;
                 onAuthSuccess(data.user);
                 onClose();
+
             } else {
-                await auth.signUp(email, password);
+                // SIGNUP MODE
+                const validUsername = username.trim().toLowerCase();
+
+                // 1. Validasyonlar
+                if (validUsername.length < 4 || validUsername.length > 15) {
+                    throw new Error('Kullanıcı adı 4-15 karakter arasında olmalıdır.');
+                }
+                if (!/^[a-z0-9_]+$/.test(validUsername)) {
+                    throw new Error('Kullanıcı adı sadece küçük harf, rakam ve alt çizgi (_) içerebilir.');
+                }
+
+                // 2. Username Unique Kontrolü (Client-side pre-check)
+                const { data: existingUser } = await supabase
+                    .from('profiles')
+                    .select('username')
+                    .eq('username', validUsername)
+                    .single();
+
+                if (existingUser) {
+                    throw new Error('Bu kullanıcı adı zaten alınmış.');
+                }
+
+                // 3. Kayıt Ol (Metadata olarak username gönderilir)
+                const { error } = await auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            username: validUsername
+                        }
+                    }
+                });
+
+                if (error) throw error;
                 setMessage('Kayıt başarılı! Email adresini kontrol et ve hesabını doğrula.');
-                setMode('login');
+                // Modu değiştirme, kullanıcı mesajı görsün
             }
         } catch (err) {
+            console.error('Auth Error:', err);
             setError(err.message === 'Invalid login credentials'
-                ? 'Email veya şifre hatalı'
+                ? 'Giriş bilgileri hatalı veya kullanıcı bulunamadı.'
                 : err.message);
         } finally {
             setLoading(false);
         }
+    };
+
+    const resetForm = () => {
+        setMode(mode === 'login' ? 'signup' : 'login');
+        setError('');
+        setMessage('');
+        setEmail('');
+        setUsername('');
+        setPassword('');
     };
 
     return (
@@ -56,10 +121,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                     maxWidth: '28rem',
                     overflow: 'hidden',
                 }}
-                className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 transition-colors"
+                className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 transition-colors rounded-2xl shadow-2xl"
             >
                 {/* Header */}
-                <div style={{ backgroundColor: '#4f46e5' }} className="p-6 text-white relative">
+                <div className="bg-indigo-600 p-6 text-white relative">
                     <h2 className="text-2xl font-bold text-center">
                         {mode === 'login' ? '🏋️ Giriş Yap' : '🎯 Kayıt Ol'}
                     </h2>
@@ -67,7 +132,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                         Antrenmanlarını her yerden takip et
                     </p>
 
-                    {/* Close button - Moved inside header for better mobile layout */}
                     <button
                         onClick={onClose}
                         className="absolute top-4 right-4 text-white/80 hover:text-white text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
@@ -90,16 +154,34 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                         </div>
                     )}
 
+                    {mode === 'signup' && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Kullanıcı Adı <span className="text-xs text-gray-400 font-normal">(4-15 karakter, küçük harf)</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                                className="w-full px-4 py-3 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                                placeholder="kullanici_adi"
+                                required
+                                minLength={4}
+                                maxLength={15}
+                            />
+                        </div>
+                    )}
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Email
+                            {mode === 'login' ? 'Email veya Kullanıcı Adı' : 'Email'}
                         </label>
                         <input
-                            type="email"
+                            type="text"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full px-4 py-3 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                            placeholder="ornek@email.com"
+                            placeholder={mode === 'login' ? "ornek@email.com veya kullanici_adi" : "ornek@email.com"}
                             required
                         />
                     </div>
@@ -122,8 +204,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                     <button
                         type="submit"
                         disabled={loading}
-                        style={{ backgroundColor: loading ? '#9ca3af' : '#4f46e5', color: 'white' }}
-                        className="w-full py-3 rounded-lg font-semibold transition disabled:cursor-not-allowed shadow-lg"
+                        className="w-full py-3 rounded-lg font-semibold transition disabled:cursor-not-allowed shadow-lg bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-gray-400"
                     >
                         {loading ? (
                             <span className="flex items-center justify-center gap-2">
@@ -141,12 +222,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 <div className="px-6 pb-6 text-center">
                     <button
                         type="button"
-                        onClick={() => {
-                            setMode(mode === 'login' ? 'signup' : 'login');
-                            setError('');
-                            setMessage('');
-                        }}
-                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium"
+                        onClick={resetForm}
+                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium underline-offset-4 hover:underline"
                     >
                         {mode === 'login'
                             ? 'Hesabın yok mu? Kayıt ol'

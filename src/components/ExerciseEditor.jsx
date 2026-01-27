@@ -43,6 +43,73 @@ export default function ExerciseEditor({
         'Tricep Extension', 'Tricep Pushdown', 'Upright Row', 'Walking Lunges'
     ].sort((a, b) => a.localeCompare(b, 'tr'));
 
+    // Otomatik Seçim Haritası
+    const EXERCISE_DEFAULTS = {
+        'Abductor Machine': { muscles: ['glutes', 'hamstrings'], type: 'Legs' },
+        'Adductor Machine': { muscles: ['quads', 'hamstrings'], type: 'Legs' }, // İç bacak genelde bu grupta
+        'Arnold Press': { muscles: ['front_delt', 'side_delt', 'triceps'], type: 'Push' },
+        'Barbell Curl': { muscles: ['biceps', 'forearm'], type: 'Pull' },
+        'Barbell Row': { muscles: ['lats', 'rhomboids', 'biceps', 'lower_back'], type: 'Pull' },
+        'Bench Press': { muscles: ['mid_chest', 'front_delt', 'triceps'], type: 'Push' },
+        'Bicep Curl': { muscles: ['biceps'], type: 'Pull' },
+        'Bulgarian Split Squat': { muscles: ['quads', 'glutes', 'hamstrings'], type: 'Legs' },
+        'Cable Crossover': { muscles: ['lower_chest', 'mid_chest'], type: 'Push' },
+        'Cable Lateral Raise': { muscles: ['side_delt'], type: 'Push' },
+        'Calf Raise': { muscles: ['calves'], type: 'Legs' },
+        'Chest Fly': { muscles: ['mid_chest'], type: 'Push' },
+        'Chest Press': { muscles: ['mid_chest', 'front_delt', 'triceps'], type: 'Push' },
+        'Chin Up': { muscles: ['lats', 'biceps'], type: 'Pull' },
+        'Deadlift': { muscles: ['lower_back', 'glutes', 'hamstrings', 'traps'], type: 'Pull' },
+        'Dips': { muscles: ['lower_chest', 'triceps', 'front_delt'], type: 'Push' },
+        'Face Pull': { muscles: ['rear_delt', 'rhomboids', 'traps'], type: 'Pull' },
+        'Front Raise': { muscles: ['front_delt'], type: 'Push' },
+        'Glute Bridge': { muscles: ['glutes', 'hamstrings'], type: 'Legs' },
+        'Hack Squat': { muscles: ['quads'], type: 'Legs' },
+        'Hammer Curl': { muscles: ['biceps', 'forearm'], type: 'Pull' },
+        'Hip Thrust': { muscles: ['glutes'], type: 'Legs' },
+        'Incline Bench Press': { muscles: ['upper_chest', 'front_delt', 'triceps'], type: 'Push' },
+        'Incline Dumbbell Press': { muscles: ['upper_chest', 'front_delt', 'triceps'], type: 'Push' },
+        'Lat Pulldown': { muscles: ['lats', 'biceps'], type: 'Pull' },
+        'Lateral Raise': { muscles: ['side_delt'], type: 'Push' },
+        'Leg Curl': { muscles: ['hamstrings'], type: 'Legs' },
+        'Leg Extension': { muscles: ['quads'], type: 'Legs' },
+        'Leg Press': { muscles: ['quads', 'glutes'], type: 'Legs' },
+        'Lunges': { muscles: ['quads', 'glutes', 'hamstrings'], type: 'Legs' },
+        'One Arm Dumbbell Row': { muscles: ['lats', 'biceps', 'rear_delt'], type: 'Pull' },
+        'Overhead Press': { muscles: ['front_delt', 'triceps', 'upper_chest'], type: 'Push' },
+        'Pec Deck': { muscles: ['mid_chest'], type: 'Push' },
+        'Plank': { muscles: ['abs', 'obliques'], type: 'Core' },
+        'Preacher Curl': { muscles: ['biceps'], type: 'Pull' },
+        'Pull Up': { muscles: ['lats', 'biceps', 'rhomboids'], type: 'Pull' },
+        'Push Up': { muscles: ['mid_chest', 'front_delt', 'triceps'], type: 'Push' },
+        'Reverse Fly': { muscles: ['rear_delt', 'rhomboids'], type: 'Pull' },
+        'Romanian Deadlift': { muscles: ['hamstrings', 'glutes', 'lower_back'], type: 'Pull' },
+        'Seated Row': { muscles: ['lats', 'rhomboids', 'biceps'], type: 'Pull' },
+        'Shoulder Press': { muscles: ['front_delt', 'triceps'], type: 'Push' },
+        'Shrugs': { muscles: ['traps'], type: 'Pull' },
+        'Skullcrusher': { muscles: ['triceps'], type: 'Push' },
+        'Squat': { muscles: ['quads', 'glutes', 'lower_back'], type: 'Legs' },
+        'Sumo Deadlift': { muscles: ['glutes', 'hamstrings', 'quads', 'lower_back'], type: 'Pull' },
+        'Tricep Extension': { muscles: ['triceps'], type: 'Push' },
+        'Tricep Pushdown': { muscles: ['triceps'], type: 'Push' },
+        'Upright Row': { muscles: ['side_delt', 'traps'], type: 'Pull' },
+        'Walking Lunges': { muscles: ['quads', 'glutes'], type: 'Legs' },
+    };
+
+    // İsim değiştiğinde otomatik doldurma (Sadece tam eşleşme veya seçim yapıldığında)
+    const handleNameSelect = (selectedName) => {
+        setName(selectedName);
+        setIsComboboxOpen(false);
+
+        const defaults = EXERCISE_DEFAULTS[selectedName];
+        if (defaults) {
+            // Eğer daha önce kas seçilmemişse veya kullanıcı değiştirmemişse otomatik doldur
+            // (Şimdilik direkt dolduruyoruz, kullanıcı isterse değiştirir)
+            setSelectedMuscles(defaults.muscles);
+            if (defaults.type) setSelectedWorkoutType(defaults.type);
+        }
+    };
+
     // Dropdown pozisyon hesaplama
     useEffect(() => {
         if (isComboboxOpen && inputRef.current) {
@@ -223,9 +290,10 @@ export default function ExerciseEditor({
                                         {filteredExercises.map((ex, i) => (
                                             <button
                                                 key={i}
-                                                onClick={() => {
-                                                    setName(ex);
-                                                    setIsComboboxOpen(false);
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    handleNameSelect(ex);
                                                 }}
                                                 className="w-full text-left px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-gray-700 dark:text-gray-200 text-sm transition-colors border-b last:border-0 border-gray-100 dark:border-slate-700/50"
                                             >

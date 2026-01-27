@@ -527,9 +527,8 @@ export default function WeeklyGrid({
 
                         <div className="grid grid-cols-2 gap-3">
                             {workoutColors && Object.entries(workoutColors).map(([className, config]) => {
-                                // Renk ID'sini çıkar
-                                const colorMatch = className.match(/bg-(\w+)-\d+/);
-                                const colorId = colorMatch ? colorMatch[1] : 'gray';
+                                // Renk ID'sini çıkar (Düz isim veya Tailwind class)
+                                const colorId = THEME_COLORS[className] ? className : (className.match(/bg-(\w+)-\d+/)?.[1] || 'gray');
 
                                 return (
                                     <button

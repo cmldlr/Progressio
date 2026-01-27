@@ -14,17 +14,17 @@ export const supabase = supabaseUrl && supabaseAnonKey
 // Auth helper functions
 export const auth = {
     // Kayıt ol
-    signUp: async (email, password) => {
+    signUp: async (credentials) => {
         if (!supabase) throw new Error('Supabase not configured');
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp(credentials);
         if (error) throw error;
         return data;
     },
 
     // Giriş yap
-    signIn: async (email, password) => {
+    signInWithPassword: async (credentials) => {
         if (!supabase) throw new Error('Supabase not configured');
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword(credentials);
         if (error) throw error;
         return data;
     },
