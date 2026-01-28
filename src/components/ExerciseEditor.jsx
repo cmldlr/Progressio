@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import BodyDiagram from './BodyDiagram';
-import CustomColorPicker from './CustomColorPicker'; // NEW IMPORT
+import WheelColorPicker from './WheelColorPicker'; // NEW IMPORT
 import {
     COLOR_OPTIONS,
     getPreviewStyles,
@@ -175,7 +175,7 @@ export default function ExerciseEditor({
                             <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Renk Seçimi</span>
                             <span className="text-xs font-mono text-gray-400 bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-gray-200 dark:border-slate-700">{selectedColor}</span>
                         </div>
-                        <CustomColorPicker
+                        <WheelColorPicker
                             color={selectedColor}
                             onChange={setSelectedColor}
                         />

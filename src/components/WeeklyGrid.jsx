@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, Dumbbell, Copy, Plus, Eye, EyeOff } from 'lucide-react';
 import ExerciseEditor from './ExerciseEditor';
+import CustomColorPicker from './CustomColorPicker';
 import {
     THEME_COLORS,
     COLOR_OPTIONS,
@@ -167,12 +168,12 @@ export default function WeeklyGrid({
         setEditingDay({ ...day, index });
     };
 
-    const saveDayEditor = (colorOption) => {
+    const saveDayEditor = (updates) => {
         if (editingDay && onUpdateDay) {
             onUpdateDay(activeWeek.id, editingDay.index, {
-                label: editingDay.label, // Label değişmiyor
-                type: colorOption.type, // Type renge göre otomatik atanıyor
-                color: colorOption.value
+                label: editingDay.label,
+                type: updates.type,
+                color: updates.color
             });
         }
         setEditingDay(null);
@@ -596,15 +597,23 @@ export default function WeeklyGrid({
                     <div className="flex flex-col gap-4">
                         <div className="text-center">
                             <h3 className="text-xl font-bold text-gray-800 dark:text-white">{editingDay.label}</h3>
-                            <p className="text-xs text-gray-400 dark:text-slate-500">Antrenman türü ve rengini belirleyin</p>
+                            <p className="text-xs text-gray-400 dark:text-slate-500">Antrenman türünü belirleyin</p>
                         </div>
 
                         {/* Workout Type Selector */}
                         <div className="flex flex-wrap gap-2 justify-center mb-2">
-                            {['Cardio', 'Strength', 'HIIT', 'Rest', 'Other'].map(type => (
+                            {workoutTypes.map(type => (
                                 <button
                                     key={type}
-                                    onClick={() => saveDayEditor({ ...editingDay, type: type })}
+                                    onClick={() => {
+                                        // Auto-apply custom color if defined in settings
+                                        const typeColor = workoutColors?.[type];
+                                        setEditingDay(prev => ({
+                                            ...prev,
+                                            type: type,
+                                            color: typeColor || prev.color
+                                        }));
+                                    }}
                                     className={`px-3 py-1 text-sm rounded-full border transition-colors ${editingDay.type === type
                                         ? 'bg-indigo-50 border-indigo-500 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
                                         : 'border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-400'}`}
@@ -614,19 +623,6 @@ export default function WeeklyGrid({
                             ))}
                         </div>
 
-                        <div className="border-t border-gray-100 dark:border-slate-800 my-1"></div>
-
-                        {/* Custom Color Picker */}
-                        <CustomColorPicker
-                            color={editingDay.color?.startsWith('#') ? editingDay.color : '#3b82f6'}
-                            onChange={(newColor) => {
-                                // Real-time update or save? User likely wants to "Save" at the end.
-                                // But CustomColorPicker updates immediately.
-                                // Let's simplify: Updating editingDay state, then "Save" button commits.
-                                setEditingDay(prev => ({ ...prev, color: newColor }));
-                            }}
-                        />
-
                         <div className="mt-4 flex gap-2">
                             <button
                                 onClick={() => setEditingDay(null)}
@@ -635,7 +631,7 @@ export default function WeeklyGrid({
                                 İptal
                             </button>
                             <button
-                                onClick={() => saveDayEditor({ value: editingDay.color, type: editingDay.type || 'Other' })}
+                                onClick={() => saveDayEditor(editingDay)}
                                 className="flex-1 px-4 py-2 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-lg shadow-indigo-500/30"
                             >
                                 Kaydet

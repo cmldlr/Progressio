@@ -35,20 +35,33 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 }
 
                 // 2. Email ile giriş yap
-                const { data, error } = await auth.signInWithPassword({
+                const { data: authData, error } = await auth.signInWithPassword({
                     email: finalEmail,
                     password: password
                 });
 
-                if (error) throw error;
+                if (error) {
+                    console.error("Login Error:", error);
+                    throw error;
+                }
 
-                let user = data?.user || data?.session?.user;
+                console.log("Login Response Data:", authData);
 
-                // Fallback: If user is missing but no error (rare race condition)
+                // Supabase v2: data structure is { user, session }
+                // My wrapper returns exactly what supabase returns.
+                let user = authData?.user || authData?.session?.user;
+
+                // Fallback attempt if user is missing but no error
                 if (!user) {
-                    const { data: userData, error: userError } = await auth.getUser();
-                    if (!userError && userData?.user) {
-                        user = userData.user;
+                    // Force session refresh
+                    const { data: sessionData } = await supabase.auth.getSession();
+                    user = sessionData?.session?.user;
+                    console.log("User retrieved from session fallback:", user);
+
+                    if (!user) {
+                        const { data: userData } = await auth.getUser();
+                        user = userData?.user;
+                        console.log("User retrieved from getUser fallback:", user);
                     }
                 }
 
@@ -56,7 +69,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                     onAuthSuccess(user);
                     onClose();
                 } else {
-                    throw new Error('Giriş başarılı fakat kullanıcı bilgisi alınamadı.');
+                    console.error("CRITICAL: Login successful but no user object found.", authData);
+                    throw new Error('Giriş başarılı fakat kullanıcı bilgisi alınamadı. (No User Object)');
                 }
 
             } else {

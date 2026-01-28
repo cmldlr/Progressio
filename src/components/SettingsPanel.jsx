@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
 import {
     THEME_COLORS,
     COLOR_OPTIONS,
     getPreviewClasses,
     extractColorId
 } from '../utils/themeColors';
+import WheelColorPicker from './WheelColorPicker';
 
 export default function SettingsPanel({
     isOpen,
@@ -20,6 +22,7 @@ export default function SettingsPanel({
     onUpdateWorkoutColor
 }) {
     const [activeTab, setActiveTab] = useState('muscles');
+    const [expandedType, setExpandedType] = useState(null);
 
     // Yeni kas grubu form state
     const [newMuscleId, setNewMuscleId] = useState('');
@@ -224,40 +227,69 @@ export default function SettingsPanel({
                         <div className="space-y-4">
                             <div className="bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/50 rounded-lg p-4">
                                 <p className="text-sm text-purple-800 dark:text-purple-300 mb-4">
-                                    Hangi rengin hangi antrenman tipini temsil ettiğini buradan ayarlayabilirsiniz.
-                                    Bu seçim, "Sütunu Düzenle" ekranındaki butonların işlevini belirler.
+                                    Antrenman tiplerine özel renkler atayın. Gün düzenlerken seçtiğiniz tipe göre günün rengi otomatik ayarlanır.
                                 </p>
 
-                                <div className="grid gap-3">
-                                    {workoutColors && Object.entries(workoutColors).map(([className, config]) => {
-                                        const colorId = extractColorId(className);
+                                <div className="space-y-2">
+                                    {workoutTypes.map(type => {
+                                        const currentColor = workoutColors?.[type] || '#9ca3af';
 
                                         return (
-                                            <div key={className} className="flex items-center gap-3 bg-white dark:bg-slate-900 p-3 rounded-lg border border-gray-100 dark:border-slate-800 shadow-sm">
-                                                {/* Renk Göstergesi - Tema uyumlu */}
-                                                <div className={`w-10 h-10 rounded-lg border border-gray-200 dark:border-slate-700 flex items-center justify-center ${getPreviewClasses(colorId)}`}>
-                                                    <span className="text-xs font-bold opacity-60">{config.label[0]}</span>
-                                                </div>
+                                            <div key={type} className="flex items-center justify-between bg-white dark:bg-slate-900 p-3 rounded-lg border border-gray-100 dark:border-slate-800 shadow-sm hover:border-indigo-200 transition-colors">
+                                                <span className="font-medium text-gray-700 dark:text-gray-200">{type}</span>
 
-                                                <div className="flex-1">
-                                                    <h5 className="text-sm font-bold text-gray-700 dark:text-slate-200">{config.label}</h5>
-                                                </div>
-
-                                                {/* Antrenman Tipi Seçimi */}
-                                                <select
-                                                    value={config.type}
-                                                    onChange={(e) => onUpdateWorkoutColor(className, e.target.value)}
-                                                    className="p-2 border border-gray-300 dark:border-slate-700 rounded text-sm bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 focus:ring-2 focus:ring-indigo-500"
+                                                <button
+                                                    onClick={() => setExpandedType(type)} // expandedType'ı artık aktif modal tipi olarak kullanıyoruz
+                                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
                                                 >
-                                                    <option value="Off">Off</option>
-                                                    {workoutTypes.map(t => (
-                                                        <option key={t} value={t}>{t}</option>
-                                                    ))}
-                                                </select>
+                                                    <span className="text-xs text-gray-500 font-mono">{currentColor}</span>
+                                                    <div
+                                                        className="w-8 h-8 rounded-full border border-gray-200 dark:border-slate-700 shadow-inner"
+                                                        style={{ backgroundColor: currentColor }}
+                                                    />
+                                                </button>
                                             </div>
                                         );
                                     })}
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Color Picker Modal Overlay */}
+                    {expandedType && activeTab === 'colors' && (
+                        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                            {/* Backdrop */}
+                            <div
+                                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                                onClick={() => setExpandedType(null)}
+                            />
+
+                            {/* Modal */}
+                            <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-6 w-full max-w-xs border border-gray-100 dark:border-slate-800 animation-expand">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-bold text-gray-800 dark:text-white">
+                                        {expandedType} Rengi
+                                    </h3>
+                                    <button
+                                        onClick={() => setExpandedType(null)}
+                                        className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-400"
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                </div>
+
+                                <WheelColorPicker
+                                    color={workoutColors?.[expandedType] || '#9ca3af'}
+                                    onChange={(newColor) => onUpdateWorkoutColor(expandedType, newColor)}
+                                />
+
+                                <button
+                                    onClick={() => setExpandedType(null)}
+                                    className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-xl transition-colors"
+                                >
+                                    Kaydet & Kapat
+                                </button>
                             </div>
                         </div>
                     )}

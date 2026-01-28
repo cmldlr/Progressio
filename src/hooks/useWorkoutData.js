@@ -45,15 +45,20 @@ const DEFAULT_DAYS = [
 
 // Varsayılan renk-antrenman eşleşmeleri
 // Varsayılan renk-antrenman eşleşmeleri (Temizlendi)
+// Varsayılan renk-antrenman eşleşmeleri (Type -> Hex)
 const DEFAULT_WORKOUT_COLORS = {
-    'gray': { label: 'Varsayılan', type: 'Off' },
-    'red': { label: 'Kırmızı', type: '' },
-    'blue': { label: 'Mavi', type: '' },
-    'green': { label: 'Yeşil', type: '' },
-    'yellow': { label: 'Sarı', type: '' },
-    'purple': { label: 'Mor', type: '' },
-    'orange': { label: 'Turuncu', type: '' },
+    'Push': '#ef4444',      // Kırmızı
+    'Pull': '#3b82f6',      // Mavi
+    'Legs': '#10b981',      // Yeşil
+    'Upper Body': '#8b5cf6',// Mor
+    'Lower Body': '#ea580c',// Turuncu
+    'Full Body': '#eab308', // Sarı
+    'Cardio': '#f97316',    // Turuncu
+    'Core': '#06b6d4',      // Cyan
+    'Off': '#9ca3af',       // Gri
 };
+
+
 
 // Initial state structure
 const INITIAL_STATE = {
@@ -408,14 +413,54 @@ export function useWorkoutData() {
         },
 
         // Renk - Antrenman Tipi Eşleşmesini Güncelle
-        updateWorkoutColor: (colorKey, newType) => {
+        // Renk - Antrenman Tipi Eşleşmesini Güncelle (New Logic)
+        updateWorkoutColor: (workoutType, newColor) => {
+            setData(prev => {
+                // 1. Yeni renk haritasını oluştur
+                const newWorkoutColors = {
+                    ...prev.workoutColors,
+                    [workoutType]: newColor
+                };
+
+                // 2. Mevcut tüm haftalardaki günleri kontrol et ve güncelle
+                const newWeeks = prev.weeks.map(week => {
+                    if (!week.days) return week;
+
+                    const newDays = week.days.map(day => {
+                        // Eğer günün antrenman tipi güncellenen tiple aynıysa, rengini de güncelle
+                        if (day.type === workoutType) {
+                            return { ...day, color: newColor };
+                        }
+                        return day;
+                    });
+
+                    return { ...week, days: newDays };
+                });
+
+                return {
+                    ...prev,
+                    workoutColors: newWorkoutColors,
+                    weeks: newWeeks
+                };
+            });
+        },
+
+        addWorkoutType: (type) => {
             setData(prev => ({
                 ...prev,
-                workoutColors: {
-                    ...prev.workoutColors,
-                    [colorKey]: { ...prev.workoutColors[colorKey], type: newType }
-                }
+                workoutTypes: [...prev.workoutTypes, type],
+                // Yeni tipe varsayılan renk ata (gri)
+                workoutColors: { ...prev.workoutColors, [type]: '#9ca3af' }
             }));
+        },
+
+        removeWorkoutType: (type) => {
+            setData(prev => {
+                const newTypes = prev.workoutTypes.filter(t => t !== type);
+                const newColors = { ...prev.workoutColors };
+                delete newColors[type];
+                return { ...prev, workoutTypes: newTypes, workoutColors: newColors };
+            });
         },
 
         // Egzersiz Silme (Cascading Delete & Shift)
