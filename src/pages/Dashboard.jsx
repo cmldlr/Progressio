@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CalendarView from '../components/CalendarView';
 import WeeklyGrid from '../components/WeeklyGrid';
 import WeekSelector from '../components/WeekSelector';
 import SettingsPanel from '../components/SettingsPanel';
@@ -8,6 +9,7 @@ import { LogOut, Settings, Upload, Download, RefreshCw, Menu, Calendar, Clock, F
 export default function Dashboard() {
     const { data, activeWeek, actions, user, loading, syncStatus, syncError, signOut } = useWorkoutData();
     const [showSettings, setShowSettings] = useState(false);
+    const [viewMode, setViewMode] = useState('weekly'); // 'weekly' | 'calendar'
 
     // Anlık Tarih/Saat State'i
     const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -191,34 +193,64 @@ export default function Dashboard() {
                 </div>
             </header>
 
+            {/* View Toggle */}
+            <div className="container mx-auto px-4 mt-6">
+                <div className="flex p-1 bg-gray-200 dark:bg-slate-800 rounded-xl w-fit">
+                    <button
+                        onClick={() => setViewMode('weekly')}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === 'weekly'
+                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                            }`}
+                    >
+                        Haftalık Program
+                    </button>
+                    <button
+                        onClick={() => setViewMode('calendar')}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === 'calendar'
+                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                            }`}
+                    >
+                        Takvim
+                    </button>
+                </div>
+            </div>
+
             {/* Main Content */}
             <main className="container mx-auto px-4 py-8">
-                <div className="mb-8">
-                    <WeekSelector
-                        weeks={data.weeks}
-                        activeWeekId={data.activeWeekId}
-                        onSelectWeek={actions.setActiveWeek}
-                        onAddWeek={actions.addWeek}
-                        onDeleteWeek={actions.deleteWeek}
-                    />
-                </div>
+                {viewMode === 'weekly' ? (
+                    <>
+                        <div className="mb-8">
+                            <WeekSelector
+                                weeks={data.weeks}
+                                activeWeekId={data.activeWeekId}
+                                onSelectWeek={actions.setActiveWeek}
+                                onAddWeek={actions.addWeek}
+                                onDeleteWeek={actions.deleteWeek}
+                            />
+                        </div>
 
-                <WeeklyGrid
-                    activeWeek={activeWeek}
-                    onCellChange={actions.updateGridData}
-                    onAddExercise={actions.updateExercises}
-                    onUpdateExercises={actions.updateExercises}
-                    onUpdateRowColor={actions.updateRowColor}
-                    onUpdateDay={actions.updateDay}
-                    onClearData={() => { }}
-                    muscleGroups={data.muscleGroups}
-                    workoutTypes={data.workoutTypes}
-                    exerciseDetails={data.exerciseDetails}
-                    onUpdateExerciseDetails={actions.updateExerciseDetails}
-                    workoutColors={data.workoutColors} // Renk paleti verisi
-                    focusMode={focusMode}
-                    onDeleteExercise={actions.deleteExercise}
-                />
+                        <WeeklyGrid
+                            activeWeek={activeWeek}
+                            onCellChange={actions.updateGridData}
+                            onAddExercise={actions.updateExercises}
+                            onUpdateExercises={actions.updateExercises}
+                            onUpdateRowColor={actions.updateRowColor}
+                            onUpdateDay={actions.updateDay}
+                            onClearData={() => { }}
+                            muscleGroups={data.muscleGroups}
+                            workoutTypes={data.workoutTypes}
+                            exerciseDetails={data.exerciseDetails}
+                            onUpdateExerciseDetails={actions.updateExerciseDetails}
+                            workoutColors={data.workoutColors}
+                            focusMode={focusMode}
+                            onDeleteExercise={actions.deleteExercise}
+                        />
+                    </>
+                ) : (
+                    <CalendarView data={data} actions={actions} />
+                )}
             </main>
 
             <SettingsPanel
@@ -226,12 +258,14 @@ export default function Dashboard() {
                 onClose={() => setShowSettings(false)}
                 muscleGroups={data.muscleGroups}
                 workoutTypes={data.workoutTypes}
-                workoutColors={data.workoutColors} // Renk paleti verisi
+                workoutColors={data.workoutColors}
+                startDate={data.startDate} // Program Başlangıç Tarihi
                 onAddMuscleGroup={actions.addMuscleGroup}
                 onRemoveMuscleGroup={actions.removeMuscleGroup}
                 onAddWorkoutType={actions.addWorkoutType}
                 onRemoveWorkoutType={actions.removeWorkoutType}
-                onUpdateWorkoutColor={actions.updateWorkoutColor} // Renk güncelleme aksiyonu
+                onUpdateWorkoutColor={actions.updateWorkoutColor}
+                onUpdateStartDate={actions.setStartDate} // Tarih güncelleme aksiyonu
             />
         </div>
     );
