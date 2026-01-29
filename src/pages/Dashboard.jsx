@@ -3,12 +3,17 @@ import CalendarView from '../components/CalendarView';
 import WeeklyGrid from '../components/WeeklyGrid';
 import WeekSelector from '../components/WeekSelector';
 import SettingsPanel from '../components/SettingsPanel';
+import MeasurementsModal from '../components/MeasurementsModal'; // Import eklendi
 import { useWorkoutData } from '../hooks/useWorkoutData';
-import { LogOut, Settings, Upload, Download, RefreshCw, Menu, Calendar, Clock, Filter, Moon, Sun } from 'lucide-react';
+import { useMeasurements } from '../hooks/useMeasurements'; // Hook eklendi
+import { LogOut, Settings, Upload, Download, RefreshCw, Menu, Calendar, Clock, Filter, Moon, Sun, Activity } from 'lucide-react';
 
 export default function Dashboard() {
     const { data, activeWeek, actions, user, loading, syncStatus, syncError, signOut } = useWorkoutData();
+    const { addMeasurement } = useMeasurements(); // Hook kullanımı
+
     const [showSettings, setShowSettings] = useState(false);
+    const [showMeasurements, setShowMeasurements] = useState(false); // Modal state
     const [viewMode, setViewMode] = useState('weekly'); // 'weekly' | 'calendar'
 
     // Anlık Tarih/Saat State'i
@@ -63,7 +68,8 @@ export default function Dashboard() {
         fileReader.onload = e => {
             try {
                 const parsed = JSON.parse(e.target.result);
-                if (parsed.weeks) {
+                // Basit bir kontrol
+                if (parsed.muscleGroups || parsed.weeks) {
                     actions.importData(parsed);
                     alert("Yedek başarıyla yüklendi!");
                 } else {
@@ -168,6 +174,15 @@ export default function Dashboard() {
 
                         {/* Tools Menu */}
                         <div className="flex items-center gap-1 sm:gap-2 mr-2 sm:mr-4 border-l border-gray-200 dark:border-slate-700 pl-2 ml-2">
+                            {/* Ölçüm Ekle Butonu */}
+                            <button
+                                onClick={() => setShowMeasurements(true)}
+                                className="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition"
+                                title="Ölçüm Ekle"
+                            >
+                                <Activity className="w-5 h-5" />
+                            </button>
+
                             <button onClick={() => setShowSettings(true)} className="p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition" title="Ayarlar">
                                 <Settings className="w-5 h-5" />
                             </button>
@@ -223,9 +238,9 @@ export default function Dashboard() {
                     <>
                         <div className="mb-8">
                             <WeekSelector
-                                weeks={data.weeks}
+                                weeks={data.weeksList || []}
                                 activeWeekId={data.activeWeekId}
-                                onSelectWeek={actions.setActiveWeek}
+                                onSelectWeek={actions.goToWeek}
                                 onAddWeek={actions.addWeek}
                                 onDeleteWeek={actions.deleteWeek}
                             />
@@ -238,6 +253,7 @@ export default function Dashboard() {
                             onUpdateExercises={actions.updateExercises}
                             onUpdateRowColor={actions.updateRowColor}
                             onUpdateDay={actions.updateDay}
+                            onUpdateGroup={actions.updateExerciseGroup}
                             onClearData={() => { }}
                             muscleGroups={data.muscleGroups}
                             workoutTypes={data.workoutTypes}
@@ -249,10 +265,18 @@ export default function Dashboard() {
                         />
                     </>
                 ) : (
-                    <CalendarView data={data} actions={actions} />
+                    <CalendarView
+                        data={data}
+                        actions={actions}
+                        onNavigate={(weekNum) => {
+                            actions.goToWeek(weekNum);
+                            setViewMode('weekly');
+                        }}
+                    />
                 )}
             </main>
 
+            {/* Modals */}
             <SettingsPanel
                 isOpen={showSettings}
                 onClose={() => setShowSettings(false)}
@@ -266,6 +290,12 @@ export default function Dashboard() {
                 onRemoveWorkoutType={actions.removeWorkoutType}
                 onUpdateWorkoutColor={actions.updateWorkoutColor}
                 onUpdateStartDate={actions.setStartDate} // Tarih güncelleme aksiyonu
+            />
+
+            <MeasurementsModal
+                isOpen={showMeasurements}
+                onClose={() => setShowMeasurements(false)}
+                onSave={addMeasurement}
             />
         </div>
     );

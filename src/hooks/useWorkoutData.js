@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, auth, workoutDB, weeksDB } from '../lib/supabaseClient';
 import { differenceInCalendarDays, addDays, format, startOfWeek } from 'date-fns';
+import { tr } from 'date-fns/locale';
 
 const STORAGE_KEY = 'progressio_settings_v4';
 
@@ -80,14 +81,24 @@ export function useWorkoutData() {
         const globalStart = new Date(startDateStr);
         const thisWeekStart = addDays(globalStart, (weekNum - 1) * 7);
 
+        // Populate days with specific dates
+        const daysWithDates = DEFAULT_DAYS_TEMPLATE.map((day, index) => {
+            const dayDate = addDays(thisWeekStart, index);
+            return {
+                ...day,
+                date: dayDate.toISOString(), // ISO String for DB/Logic
+                displayDate: format(dayDate, 'd MMMM', { locale: tr }) // "5 Ocak" format for UI
+            };
+        });
+
         return {
-            id: `week-${weekNum}`, // Temp ID, DB will assign UUID
+            id: `week-${weekNum}`,
             weekNumber: weekNum,
             startDate: thisWeekStart.toISOString(),
             label: `${weekNum}. Hafta`,
             exercises: [],
             gridData: {},
-            days: JSON.parse(JSON.stringify(DEFAULT_DAYS_TEMPLATE))
+            days: daysWithDates
         };
     };
 

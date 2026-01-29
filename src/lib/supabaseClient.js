@@ -142,3 +142,46 @@ export const weeksDB = {
         return data;
     }
 };
+
+// Measurements Table Operations (Progress Tracking)
+export const measurementsDB = {
+    // Tüm ölçümleri getir (Tarihe göre yeni -> eski)
+    getAll: async (userId) => {
+        if (!supabase) return [];
+        const { data, error } = await supabase
+            .from('measurements')
+            .select('*')
+            .eq('user_id', userId)
+            .order('date', { ascending: false });
+
+        if (error) throw error;
+        return data;
+    },
+
+    // Yeni ölçüm ekle
+    add: async (userId, measurementData) => {
+        if (!supabase) return null;
+        const { data, error } = await supabase
+            .from('measurements')
+            .insert([{
+                user_id: userId,
+                ...measurementData
+            }])
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    // Ölçüm sil
+    delete: async (id) => {
+        if (!supabase) return;
+        const { error } = await supabase
+            .from('measurements')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+    }
+};
