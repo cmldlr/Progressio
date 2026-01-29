@@ -247,7 +247,7 @@ export default function CalendarView({ data, actions }) {
                                                     onClick={() => props.onNavigate && props.onNavigate(selectedDateDetails.weekNumber)}
                                                     className="text-sm text-indigo-600 hover:underline"
                                                 >
-                                                    Veri Girmek İçin Git ->
+                                                    Veri Girmek İçin Git &rarr;
                                                 </button>
                                             </div>
                                         );

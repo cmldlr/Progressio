@@ -19,7 +19,9 @@ export default function SettingsPanel({
     onRemoveMuscleGroup,
     onAddWorkoutType,
     onRemoveWorkoutType,
-    onUpdateWorkoutColor
+    onUpdateWorkoutColor,
+    startDate,
+    onUpdateStartDate
 }) {
     const [activeTab, setActiveTab] = useState('muscles');
     const [expandedType, setExpandedType] = useState(null);
@@ -103,6 +105,15 @@ export default function SettingsPanel({
                             }`}
                     >
                         🎨 Renkler
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('program')}
+                        className={`flex-1 px-4 py-3 text-sm font-medium transition ${activeTab === 'program'
+                            ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 bg-white dark:bg-slate-900'
+                            : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800'
+                            }`}
+                    >
+                        📅 Program
                     </button>
                 </div>
 
@@ -222,7 +233,7 @@ export default function SettingsPanel({
                         </div>
                     )}
 
-                    {/* YENİ: Renk Antrenman Eşleşmeleri */}
+                    {/* Colors Tab Content */}
                     {activeTab === 'colors' && (
                         <div className="space-y-4">
                             <div className="bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/50 rounded-lg p-4">
@@ -252,6 +263,32 @@ export default function SettingsPanel({
                                         );
                                     })}
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Program Ayarları (Başlangıç Tarihi) */}
+                    {activeTab === 'program' && (
+                        <div className="space-y-4">
+                            <div className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900/50 rounded-lg p-4">
+                                <h4 className="text-sm font-bold text-indigo-800 dark:text-indigo-300 mb-3">Program Başlangıcı</h4>
+                                <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
+                                    Bu tarih, 1. Haftanın başlangıcı olarak kabul edilir. Tüm haftalar bu tarihe göre hesaplanır.
+                                </p>
+
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Başlangıç Tarihi Seçin
+                                </label>
+                                <input
+                                    type="date"
+                                    value={startDate ? startDate.split('T')[0] : ''}
+                                    onChange={(e) => {
+                                        if (onUpdateStartDate && e.target.value) {
+                                            onUpdateStartDate(new Date(e.target.value).toISOString());
+                                        }
+                                    }}
+                                    className="w-full p-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                />
                             </div>
                         </div>
                     )}

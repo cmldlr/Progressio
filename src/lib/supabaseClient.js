@@ -58,11 +58,11 @@ export const workoutDB = {
         if (!supabase) return null;
         const { data, error } = await supabase
             .from('workout_data')
-            .select('muscle_groups, workout_types, exercise_details, workout_colors, active_week_id, updated_at') // Hafifletilmiş sorgu
+            .select('muscle_groups, workout_types, exercise_details, workout_colors, active_week_id, updated_at, start_date') // start_date eklendi
             .eq('user_id', userId)
-            .single();
+            .maybeSingle(); // single() yerine maybeSingle() - 406 hatasını engeller
 
-        if (error && error.code !== 'PGRST116') throw error;
+        if (error) throw error;
         return data;
     },
 

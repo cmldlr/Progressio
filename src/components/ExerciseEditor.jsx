@@ -47,8 +47,39 @@ export default function ExerciseEditor({
         'Tricep Extension', 'Tricep Pushdown', 'Upright Row', 'Walking Lunges'
     ].sort((a, b) => a.localeCompare(b, 'tr'));
 
-    // Otomatik Seçim Haritası (Kısaltıldı..)
-    // ...
+    // Otomatik Seçim Haritası
+    const EXERCISE_DEFAULTS = {
+        'Arnold Press': { workoutType: 'Push', muscles: ['front_delt', 'side_delt'] },
+        'Bench Press': { workoutType: 'Push', muscles: ['mid_chest', 'front_delt', 'triceps'] },
+        'Incline Bench Press': { workoutType: 'Push', muscles: ['upper_chest', 'front_delt'] },
+        'Chest Press': { workoutType: 'Push', muscles: ['mid_chest', 'triceps'] },
+        'Push Up': { workoutType: 'Push', muscles: ['mid_chest', 'triceps', 'front_delt'] },
+        'Dips': { workoutType: 'Push', muscles: ['lower_chest', 'triceps'] },
+        'Overhead Press': { workoutType: 'Push', muscles: ['front_delt', 'triceps'] },
+        'Lateral Raise': { workoutType: 'Push', muscles: ['side_delt'] },
+        'Tricep Pushdown': { workoutType: 'Push', muscles: ['triceps'] },
+        'Skullcrusher': { workoutType: 'Push', muscles: ['triceps'] },
+
+        'Pull Up': { workoutType: 'Pull', muscles: ['lats', 'biceps'] },
+        'Lat Pulldown': { workoutType: 'Pull', muscles: ['lats', 'biceps'] },
+        'Barbell Row': { workoutType: 'Pull', muscles: ['lats', 'rhomboids'] },
+        'Seated Row': { workoutType: 'Pull', muscles: ['lats', 'rhomboids', 'traps'] },
+        'Face Pull': { workoutType: 'Pull', muscles: ['rear_delt', 'rhomboids'] },
+        'Bicep Curl': { workoutType: 'Pull', muscles: ['biceps'] },
+        'Hammer Curl': { workoutType: 'Pull', muscles: ['biceps', 'forearm'] },
+        'Deadlift': { workoutType: 'Pull', muscles: ['lower_back', 'glutes', 'hamstrings'] },
+
+        'Squat': { workoutType: 'Legs', muscles: ['quads', 'glutes', 'lower_back'] },
+        'Leg Press': { workoutType: 'Legs', muscles: ['quads', 'glutes'] },
+        'Lunges': { workoutType: 'Legs', muscles: ['quads', 'glutes', 'hamstrings'] },
+        'Leg Extension': { workoutType: 'Legs', muscles: ['quads'] },
+        'Leg Curl': { workoutType: 'Legs', muscles: ['hamstrings'] },
+        'Calf Raise': { workoutType: 'Legs', muscles: ['calves'] },
+        'Romanian Deadlift': { workoutType: 'Legs', muscles: ['hamstrings', 'glutes', 'lower_back'] },
+
+        'Plank': { workoutType: 'Core', muscles: ['abs', 'core'] },
+        'Crunch': { workoutType: 'Core', muscles: ['abs'] }
+    };
 
     // ... (Existing useEffects) ...
     // Reset state on open
@@ -76,10 +107,20 @@ export default function ExerciseEditor({
 
     // ... (Existing helpers) ...
     const handleNameSelect = (selectedName) => {
-        // ... (Kısaltıldı)
         setName(selectedName);
         setIsComboboxOpen(false);
-        // ...
+
+        // Otomatik Doldurma Mantığı
+        const defaults = EXERCISE_DEFAULTS[selectedName];
+        if (defaults) {
+            // Eğer kullanıcı henüz manuel seçim yapmadıysa veya boşsa doldur
+            if (defaults.workoutType) setSelectedWorkoutType(defaults.workoutType);
+            if (defaults.muscles) {
+                // Mevcut seçili kaslar varsa üzerine ekle veya direkt set et
+                // Genelde direkt set etmek daha mantıklı (resetleyip)
+                setSelectedMuscles(defaults.muscles);
+            }
+        }
     };
 
     // ...
