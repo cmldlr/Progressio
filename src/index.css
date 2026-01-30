@@ -5,6 +5,7 @@
 /* Safe Area Insets for iOS notch/home bar */
 html {
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    overscroll-behavior: none; /* Pull-to-refresh engellemek için */
 }
 
 body {
@@ -13,6 +14,7 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none; /* Pull-to-refresh engellemek için */
 }
 
 .dark body {

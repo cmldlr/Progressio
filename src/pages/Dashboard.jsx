@@ -3,18 +3,19 @@ import CalendarView from '../components/CalendarView';
 import WeeklyGrid from '../components/WeeklyGrid';
 import WeekSelector from '../components/WeekSelector';
 import SettingsPanel from '../components/SettingsPanel';
-import MeasurementsModal from '../components/MeasurementsModal'; // Import eklendi
+import MeasurementsModal from '../components/MeasurementsModal';
+import ProgressCharts from '../components/ProgressCharts';
 import { useWorkoutData } from '../hooks/useWorkoutData';
-import { useMeasurements } from '../hooks/useMeasurements'; // Hook eklendi
-import { LogOut, Settings, Upload, Download, RefreshCw, Menu, Calendar, Clock, Filter, Moon, Sun, Activity } from 'lucide-react';
+import { useMeasurements } from '../hooks/useMeasurements';
+import { LogOut, Settings, Upload, Download, RefreshCw, Menu, Calendar, Clock, Filter, Moon, Sun, Activity, TrendingUp } from 'lucide-react';
 
 export default function Dashboard() {
     const { data, activeWeek, actions, user, loading, syncStatus, syncError, signOut } = useWorkoutData();
-    const { addMeasurement } = useMeasurements(); // Hook kullanımı
+    const { measurements, addMeasurement, loading: measurementsLoading } = useMeasurements();
 
     const [showSettings, setShowSettings] = useState(false);
-    const [showMeasurements, setShowMeasurements] = useState(false); // Modal state
-    const [viewMode, setViewMode] = useState('weekly'); // 'weekly' | 'calendar'
+    const [showMeasurements, setShowMeasurements] = useState(false);
+    const [viewMode, setViewMode] = useState('weekly'); // 'weekly' | 'calendar' | 'progress'
 
     // Anlık Tarih/Saat State'i
     const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -41,6 +42,27 @@ export default function Dashboard() {
             localStorage.setItem('theme', 'light');
         }
     }, [darkMode]);
+
+    // Pull-to-refresh prevention
+    useEffect(() => {
+        let touchStartY = 0;
+        const handleTouchStart = (e) => {
+            touchStartY = e.touches[0].clientY;
+        };
+        const handleTouchMove = (e) => {
+            const touchY = e.touches[0].clientY;
+            const touchDiff = touchY - touchStartY;
+            if (window.scrollY === 0 && touchDiff > 0) {
+                if (e.cancelable) e.preventDefault();
+            }
+        };
+        document.addEventListener('touchstart', handleTouchStart, { passive: true });
+        document.addEventListener('touchmove', handleTouchMove, { passive: false });
+        return () => {
+            document.removeEventListener('touchstart', handleTouchStart);
+            document.removeEventListener('touchmove', handleTouchMove);
+        };
+    }, []);
 
     // Saati her dakika güncelle
     useEffect(() => {
@@ -229,20 +251,32 @@ export default function Dashboard() {
                     >
                         Takvim
                     </button>
+                    <button
+                        onClick={() => setViewMode('progress')}
+                        className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === 'progress'
+                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                            }`}
+                    >
+                        <TrendingUp size={16} />
+                        İlerleme
+                    </button>
                 </div>
             </div>
 
             {/* Main Content */}
             <main className="container mx-auto px-4 py-8">
-                {viewMode === 'weekly' ? (
+                {viewMode === 'weekly' && (
                     <>
-                        <div className="mb-8">
+                        <div className="mb-8 overflow-visible">
                             <WeekSelector
                                 weeks={data.weeksList || []}
                                 activeWeekId={data.activeWeekId}
                                 onSelectWeek={actions.goToWeek}
                                 onAddWeek={actions.addWeek}
                                 onDeleteWeek={actions.deleteWeek}
+                                onResetWeek={actions.resetWeek}
+                                startDate={data.startDate}
                             />
                         </div>
 
@@ -264,7 +298,9 @@ export default function Dashboard() {
                             onDeleteExercise={actions.deleteExercise}
                         />
                     </>
-                ) : (
+                )}
+
+                {viewMode === 'calendar' && (
                     <CalendarView
                         data={data}
                         actions={actions}
@@ -273,6 +309,10 @@ export default function Dashboard() {
                             setViewMode('weekly');
                         }}
                     />
+                )}
+
+                {viewMode === 'progress' && (
+                    <ProgressCharts measurements={measurements} />
                 )}
             </main>
 

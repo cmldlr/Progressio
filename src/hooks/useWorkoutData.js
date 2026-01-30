@@ -47,7 +47,8 @@ const INITIAL_SETTINGS = {
     workoutTypes: DEFAULT_WORKOUT_TYPES,
     exerciseDetails: {},
     workoutColors: DEFAULT_WORKOUT_COLORS,
-    startDate: new Date('2026-01-05').toISOString()
+    startDate: new Date('2026-01-05').toISOString(),
+    maxWeekNumber: 1 // Varsayılan hafta sayısı
 };
 
 export function useWorkoutData() {
@@ -64,6 +65,12 @@ export function useWorkoutData() {
     const [syncStatus, setSyncStatus] = useState('idle');
     const [syncError, setSyncError] = useState(null);
     const saveTimeoutRef = useRef(null);
+    const userRef = useRef(null); // Visibility handler için ref
+
+    // User state değiştiğinde ref'i güncelle
+    useEffect(() => {
+        userRef.current = user;
+    }, [user]);
 
     // --- Helpers ---
     const calculateWeekNumber = (targetDate, startDateStr) => {
@@ -74,29 +81,67 @@ export function useWorkoutData() {
         return Math.floor(diffDays / 7) + 1;
     };
 
-    const createEmptyWeek = (weekNum, startDateStr) => {
+    // Dinamik tarih hesaplama - ASLA DB'den tarih okuma
+    const getWeekDates = useCallback((weekNum, startDateStr) => {
         const globalStart = new Date(startDateStr);
-        const thisWeekStart = addDays(globalStart, (weekNum - 1) * 7);
-
-        const daysWithDates = DEFAULT_DAYS_TEMPLATE.map((day, index) => {
-            const dayDate = addDays(thisWeekStart, index);
+        const weekStart = addDays(globalStart, (weekNum - 1) * 7);
+        return DEFAULT_DAYS_TEMPLATE.map((dayTemplate, index) => {
+            const dayDate = addDays(weekStart, index);
             return {
-                ...day,
+                ...dayTemplate,
                 date: dayDate.toISOString(),
                 displayDate: format(dayDate, 'd MMMM', { locale: tr })
             };
         });
+    }, []);
+
+    // Hafta başlangıç tarihini hesapla
+    const getWeekStartDate = useCallback((weekNum, startDateStr) => {
+        const globalStart = new Date(startDateStr);
+        return addDays(globalStart, (weekNum - 1) * 7);
+    }, []);
+
+    // Boş hafta oluştur - tarihler dinamik hesaplanır
+    const createEmptyWeek = useCallback((weekNum, startDateStr) => {
+        const weekStart = getWeekStartDate(weekNum, startDateStr);
+        const days = getWeekDates(weekNum, startDateStr);
 
         return {
-            id: `week-${weekNum}`, // Geçici ID
+            id: `week-${weekNum}`,
             weekNumber: weekNum,
-            startDate: thisWeekStart.toISOString(),
+            startDate: weekStart.toISOString(),
             label: `${weekNum}. Hafta`,
             exercises: [],
             gridData: {},
-            days: daysWithDates
+            days
         };
-    };
+    }, [getWeekDates, getWeekStartDate]);
+
+    // DB'den gelen haftayı hidratla - tarihleri yeniden hesapla
+    const hydrateWeekFromDB = useCallback((dbData, startDateStr) => {
+        const weekNum = dbData.week_number;
+        const weekStart = getWeekStartDate(weekNum, startDateStr);
+        const calculatedDays = getWeekDates(weekNum, startDateStr);
+
+        // DB'deki gün ayarlarını (tip, renk) koru, tarihleri hesapla
+        const dbDaysConfig = dbData.days_config || [];
+        const days = calculatedDays.map((calcDay, i) => ({
+            ...calcDay,
+            type: dbDaysConfig[i]?.type || '',
+            color: dbDaysConfig[i]?.color || 'gray',
+            label: dbDaysConfig[i]?.label || calcDay.label
+        }));
+
+        return {
+            id: dbData.id,
+            weekNumber: weekNum,
+            startDate: weekStart.toISOString(),
+            label: `${weekNum}. Hafta`,
+            exercises: dbData.exercises || [],
+            gridData: dbData.grid_data || {},
+            days
+        };
+    }, [getWeekDates, getWeekStartDate]);
 
     // --- Init Logic ---
     useEffect(() => {
@@ -110,13 +155,15 @@ export function useWorkoutData() {
                     // Load Settings
                     const dbSettings = await workoutDB.getSettings(currentUser.id);
                     if (dbSettings) {
+                        const loadedMaxWeek = dbSettings.max_week_number || 1;
                         setSettings(prev => ({
                             ...prev,
                             muscleGroups: dbSettings.muscle_groups || DEFAULT_MUSCLE_GROUPS,
                             workoutTypes: dbSettings.workout_types || DEFAULT_WORKOUT_TYPES,
                             exerciseDetails: dbSettings.exercise_details || {},
                             workoutColors: dbSettings.workout_colors || DEFAULT_WORKOUT_COLORS,
-                            startDate: dbSettings.start_date || INITIAL_SETTINGS.startDate
+                            startDate: dbSettings.start_date || INITIAL_SETTINGS.startDate,
+                            maxWeekNumber: loadedMaxWeek
                         }));
                     }
 
@@ -129,21 +176,16 @@ export function useWorkoutData() {
 
                     // Load initial week (check cache -> db -> empty)
                     // Since it's init, cache is empty, so check DB
+                    const effectiveStartDate = dbSettings?.start_date || INITIAL_SETTINGS.startDate;
+
                     if (metaList?.find(w => w.week_number === currentWeekNum)) {
                         const weekData = await weeksDB.getWeek(currentUser.id, currentWeekNum);
-                        const hydratedWeek = {
-                            id: weekData.id,
-                            weekNumber: weekData.week_number,
-                            startDate: weekData.start_date,
-                            label: `${weekData.week_number}. Hafta`,
-                            exercises: weekData.exercises || [],
-                            gridData: weekData.grid_data || {},
-                            days: weekData.days_config || DEFAULT_DAYS_TEMPLATE
-                        };
+                        // Tarihleri dinamik hesapla, DB'deki tarihleri kullanma
+                        const hydratedWeek = hydrateWeekFromDB(weekData, effectiveStartDate);
                         setActiveWeek(hydratedWeek);
                         setWeeksCache(prev => ({ ...prev, [currentWeekNum]: hydratedWeek }));
                     } else {
-                        const empty = createEmptyWeek(currentWeekNum, dbSettings?.start_date || INITIAL_SETTINGS.startDate);
+                        const empty = createEmptyWeek(currentWeekNum, effectiveStartDate);
                         setActiveWeek(empty);
                         setWeeksCache(prev => ({ ...prev, [currentWeekNum]: empty }));
                     }
@@ -164,8 +206,35 @@ export function useWorkoutData() {
             }
         });
 
+        // Visibility change handler - uygulama arka plandan geldiğinde session'ı yenile
+        const handleVisibilityChange = async () => {
+            if (document.visibilityState === 'visible' && userRef.current) {
+                try {
+                    // Session'ı yenile (token refresh)
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session) {
+                        console.log('Session restored on visibility change');
+                    } else {
+                        // Session yoksa kullanıcıyı kontrol et
+                        const currentUser = await auth.getUser();
+                        if (!currentUser && userRef.current) {
+                            // Kullanıcı çıkış yapmış, state'i güncelle
+                            setUser(null);
+                        }
+                    }
+                } catch (err) {
+                    console.error('Visibility change session refresh error:', err);
+                }
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
         init();
-        return () => subscription?.unsubscribe();
+        return () => {
+            subscription?.unsubscribe();
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, []);
 
     // --- Debounced Save ---
@@ -238,15 +307,8 @@ export function useWorkoutData() {
                 const meta = weekMetaList.find(w => w.week_number === weekNum);
                 if (meta) {
                     const data = await weeksDB.getWeek(user.id, weekNum);
-                    const hydratedWeek = {
-                        id: data.id,
-                        weekNumber: data.week_number,
-                        startDate: data.start_date,
-                        label: `${data.week_number}. Hafta`,
-                        exercises: data.exercises || [],
-                        gridData: data.grid_data || {},
-                        days: data.days_config || DEFAULT_DAYS_TEMPLATE
-                    };
+                    // Tarihleri dinamik hesapla
+                    const hydratedWeek = hydrateWeekFromDB(data, settings.startDate);
                     setActiveWeek(hydratedWeek);
                     setWeeksCache(prev => ({ ...prev, [weekNum]: hydratedWeek }));
                 } else {
@@ -261,49 +323,109 @@ export function useWorkoutData() {
             setLoading(false);
         },
 
-        addWeek: () => {
-            // Calculate max week from both DB and Cache (to allow consecutive adds without saving)
-            const allWeekNums = [
-                ...weekMetaList.map(w => w.week_number),
-                ...Object.keys(weeksCache).map(k => parseInt(k))
-            ];
-            const maxWeek = allWeekNums.length > 0 ? Math.max(...allWeekNums) : 0;
-            const nextWeekNum = maxWeek + 1;
+        addWeek: async () => {
+            // maxWeekNumber'dan yeni hafta numarasını hesapla
+            const nextWeekNum = settings.maxWeekNumber + 1;
+
+            // Settings'i güncelle ve kaydet
+            const newSettings = { ...settings, maxWeekNumber: nextWeekNum };
+            setSettings(newSettings);
+
+            if (user) {
+                try {
+                    await workoutDB.upsertSettings(user.id, newSettings);
+                } catch (err) {
+                    console.error('Error saving maxWeekNumber:', err);
+                }
+            }
+
+            // Yeni haftaya git
             actions.goToWeek(nextWeekNum);
         },
 
-        deleteWeek: async (weekIdentifier) => {
-            const weekNum = typeof weekIdentifier === 'string' ? parseInt(weekIdentifier.replace('week-', '')) : weekIdentifier;
+        // Hafta içeriğini sıfırla (hafta listede kalır)
+        resetWeek: async (weekNum) => {
+            if (!window.confirm(`${weekNum}. Haftanın içeriğini sıfırlamak istediğinize emin misiniz? Egzersizler ve veriler silinecek.`)) {
+                return;
+            }
 
-            if (window.confirm(`${weekNum}. Haftayı silmek (sıfırlamak) istediğinize emin misiniz?`)) {
-                try {
-                    // 1. Delete from DB
-                    if (user) {
-                        const { error } = await supabase.from('weeks').delete().eq('user_id', user.id).eq('week_number', weekNum);
-                        if (error) throw error;
-                    }
-
-                    // 2. Clear from Cache & Meta
-                    setWeekMetaList(prev => prev.filter(w => w.week_number !== weekNum));
-                    setWeeksCache(prev => {
-                        const newCache = { ...prev };
-                        delete newCache[weekNum];
-                        return newCache;
-                    });
-
-                    // 3. Reset View if Active
-                    if (activeWeek && activeWeek.weekNumber === weekNum) {
-                        const empty = createEmptyWeek(weekNum, settings.startDate);
-                        setActiveWeek(empty);
-                        // Don't add to cache yet, keep it "clean" until edit? 
-                        // Actually better to have it in State but not persisted.
-                    }
-
-                    alert(`${weekNum}. Hafta sıfırlandı.`);
-                } catch (err) {
-                    console.error("Delete Error:", err);
-                    alert("Silinemedi.");
+            try {
+                // 1. DB'den sil (içerik temizlenir)
+                if (user) {
+                    const { error } = await supabase.from('weeks').delete().eq('user_id', user.id).eq('week_number', weekNum);
+                    if (error) throw error;
                 }
+
+                // 2. Cache ve Meta'dan temizle
+                setWeekMetaList(prev => prev.filter(w => w.week_number !== weekNum));
+                setWeeksCache(prev => {
+                    const newCache = { ...prev };
+                    delete newCache[weekNum];
+                    return newCache;
+                });
+
+                // 3. Aktif hafta ise boş halini göster
+                if (activeWeek && activeWeek.weekNumber === weekNum) {
+                    const empty = createEmptyWeek(weekNum, settings.startDate);
+                    setActiveWeek(empty);
+                }
+
+                alert(`${weekNum}. Hafta sıfırlandı.`);
+            } catch (err) {
+                console.error("Reset Error:", err);
+                alert("Sıfırlanamadı.");
+            }
+        },
+
+        // Haftayı tamamen sil (sadece son hafta silinebilir)
+        deleteWeek: async (weekNum) => {
+            // Kuralları kontrol et
+            if (weekNum !== settings.maxWeekNumber) {
+                alert("Sadece son hafta silinebilir. Ortadaki haftaları silmek numaralamayı bozar.");
+                return;
+            }
+
+            if (settings.maxWeekNumber <= 1) {
+                alert("En az 1 hafta olmalı. Bu haftayı silemezsiniz, sadece sıfırlayabilirsiniz.");
+                return;
+            }
+
+            if (!window.confirm(`${weekNum}. Haftayı tamamen silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`)) {
+                return;
+            }
+
+            try {
+                // Aktif hafta ise önce bir önceki haftaya geç
+                if (activeWeek && activeWeek.weekNumber === weekNum) {
+                    await actions.goToWeek(weekNum - 1);
+                }
+
+                // 1. DB'den sil
+                if (user) {
+                    const { error } = await supabase.from('weeks').delete().eq('user_id', user.id).eq('week_number', weekNum);
+                    if (error) throw error;
+                }
+
+                // 2. maxWeekNumber'ı azalt ve kaydet
+                const newSettings = { ...settings, maxWeekNumber: settings.maxWeekNumber - 1 };
+                setSettings(newSettings);
+
+                if (user) {
+                    await workoutDB.upsertSettings(user.id, newSettings);
+                }
+
+                // 3. Cache ve Meta'dan temizle
+                setWeekMetaList(prev => prev.filter(w => w.week_number !== weekNum));
+                setWeeksCache(prev => {
+                    const newCache = { ...prev };
+                    delete newCache[weekNum];
+                    return newCache;
+                });
+
+                alert(`${weekNum}. Hafta silindi.`);
+            } catch (err) {
+                console.error("Delete Error:", err);
+                alert("Silinemedi.");
             }
         },
 
@@ -345,29 +467,28 @@ export function useWorkoutData() {
             setSettings(newSettings);
             if (user) await workoutDB.upsertSettings(user.id, newSettings);
 
-            // Aktif haftanın tarihlerini anlık güncelle
+            // Önbelleği temizle - tüm haftalar yeniden hesaplanacak
+            setWeeksCache({});
+
+            // Aktif haftayı yeni tarihlerle yeniden oluştur
             if (activeWeek) {
-                const globalStart = new Date(date);
-                const thisWeekStart = addDays(globalStart, (activeWeek.weekNumber - 1) * 7);
-
-                const newDays = activeWeek.days.map((day, index) => {
-                    const dayDate = addDays(thisWeekStart, index);
-                    return {
+                const refreshedWeek = createEmptyWeek(activeWeek.weekNumber, date);
+                // Mevcut egzersiz ve grid verilerini koru
+                const mergedWeek = {
+                    ...refreshedWeek,
+                    exercises: activeWeek.exercises,
+                    gridData: activeWeek.gridData,
+                    days: refreshedWeek.days.map((day, i) => ({
                         ...day,
-                        date: dayDate.toISOString(),
-                        displayDate: format(dayDate, 'd MMMM', { locale: tr })
-                    };
-                });
-
-                // ActiveWeek'i güncelle (startDate ve days değişti)
-                updateActiveWeek(prev => ({
-                    ...prev,
-                    startDate: thisWeekStart.toISOString(),
-                    days: newDays
-                }));
+                        type: activeWeek.days[i]?.type || '',
+                        color: activeWeek.days[i]?.color || 'gray'
+                    }))
+                };
+                setActiveWeek(mergedWeek);
+                setWeeksCache(prev => ({ ...prev, [activeWeek.weekNumber]: mergedWeek }));
             }
 
-            alert("Başlangıç tarihi güncellendi. Takvim tekrar hesaplandı.");
+            alert("Başlangıç tarihi güncellendi! Tüm haftalar yeni tarihe göre hesaplanacak.");
         },
         addMuscleGroup: async (id, label, category) => {
             const newGroups = { ...settings.muscleGroups, [id]: { id, label, category } };
@@ -409,13 +530,8 @@ export function useWorkoutData() {
     };
 
     // --- Prepare Export Data ---
-    // Combine DB Meta with Cache Keys to get full list of weeks
-    const allWeekNumbers = new Set([
-        ...weekMetaList.map(w => w.week_number),
-        ...Object.keys(weeksCache).map(k => parseInt(k)),
-        activeWeek ? activeWeek.weekNumber : 1
-    ]);
-    const maxWeek = Math.max(...allWeekNumbers, 1);
+    // maxWeekNumber'dan hafta listesini oluştur (sabit ve güvenilir)
+    const maxWeek = settings.maxWeekNumber || 1;
 
     const weeksList = [];
     for (let i = 1; i <= maxWeek; i++) {
@@ -434,7 +550,8 @@ export function useWorkoutData() {
         workoutTypes: settings.workoutTypes,
         exerciseDetails: settings.exerciseDetails,
         workoutColors: settings.workoutColors,
-        startDate: settings.startDate
+        startDate: settings.startDate,
+        userId: user?.id // CalendarView için user ID
     };
 
     return {

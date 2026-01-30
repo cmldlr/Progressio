@@ -8,7 +8,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = supabaseUrl && supabaseAnonKey
-    ? createClient(supabaseUrl, supabaseAnonKey)
+    ? createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+            persistSession: true,
+            storageKey: 'progressio-auth',
+            storage: window.localStorage,
+            autoRefreshToken: true,
+            detectSessionInUrl: true
+        }
+    })
     : null;
 
 // Auth helper functions
@@ -53,14 +61,14 @@ export const auth = {
 // Workout data CRUD operations
 // Workout data CRUD operations (Global Settings)
 export const workoutDB = {
-    // Kullanıcı verisini al (Ayarlar + Start Date)
+    // Kullanıcı verisini al (Ayarlar + Start Date + Max Week)
     getSettings: async (userId) => {
         if (!supabase) return null;
         const { data, error } = await supabase
             .from('workout_data')
-            .select('muscle_groups, workout_types, exercise_details, workout_colors, active_week_id, updated_at, start_date') // start_date eklendi
+            .select('muscle_groups, workout_types, exercise_details, workout_colors, active_week_id, updated_at, start_date, max_week_number')
             .eq('user_id', userId)
-            .maybeSingle(); // single() yerine maybeSingle() - 406 hatasını engeller
+            .maybeSingle();
 
         if (error) throw error;
         return data;
@@ -77,7 +85,8 @@ export const workoutDB = {
                 workout_types: settings.workoutTypes,
                 exercise_details: settings.exerciseDetails,
                 workout_colors: settings.workoutColors,
-                // active_week_id'yi artık weeks tablosundan veya local state'ten yönetebiliriz ama burada tutmak da "son kalınan yer" için iyi.
+                start_date: settings.startDate,
+                max_week_number: settings.maxWeekNumber, // Hafta sayısı eklendi
                 active_week_id: settings.activeWeekId,
                 updated_at: new Date().toISOString()
             }, {
@@ -137,6 +146,19 @@ export const weeksDB = {
             .from('weeks')
             .select('week_number, start_date, days_config') // Grid data çekme, hafif olsun
             .eq('user_id', userId);
+
+        if (error) throw error;
+        return data;
+    },
+
+    // Takvim görünümü için tüm haftaların tam verisini çek
+    getAllWeeks: async (userId) => {
+        if (!supabase) return [];
+        const { data, error } = await supabase
+            .from('weeks')
+            .select('*')
+            .eq('user_id', userId)
+            .order('week_number', { ascending: true });
 
         if (error) throw error;
         return data;

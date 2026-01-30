@@ -1,14 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase, auth } from '../lib/supabaseClient';
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
-    const [mode, setMode] = useState('login'); // 'login' | 'signup'
-    const [email, setEmail] = useState(''); // Login modunda 'username' de tutabilir
-    const [username, setUsername] = useState(''); // Sadece signup için
+    const [mode, setMode] = useState('login');
+    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [rememberMe, setRememberMe] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
+
+    // Kayıtlı bilgileri yükle
+    useEffect(() => {
+        const savedEmail = localStorage.getItem('progressio-saved-email');
+        const savedRemember = localStorage.getItem('progressio-remember-me') === 'true';
+        if (savedEmail && savedRemember) {
+            setEmail(savedEmail);
+            setRememberMe(true);
+        }
+    }, []);
 
     if (!isOpen) return null;
 
@@ -66,6 +77,15 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 }
 
                 if (user) {
+                    // Beni hatırla kontrolü
+                    if (rememberMe) {
+                        localStorage.setItem('progressio-saved-email', email.trim());
+                        localStorage.setItem('progressio-remember-me', 'true');
+                    } else {
+                        localStorage.removeItem('progressio-saved-email');
+                        localStorage.removeItem('progressio-remember-me');
+                    }
+
                     onAuthSuccess(user);
                     onClose();
                 } else {
@@ -230,6 +250,25 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                             minLength={6}
                         />
                     </div>
+
+                    {/* Beni Hatırla - Sadece Login modunda */}
+                    {mode === 'login' && (
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                id="remember-me"
+                                checked={rememberMe}
+                                onChange={(e) => setRememberMe(e.target.checked)}
+                                className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer"
+                            />
+                            <label
+                                htmlFor="remember-me"
+                                className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer select-none"
+                            >
+                                Beni Hatırla
+                            </label>
+                        </div>
+                    )}
 
                     <button
                         type="submit"

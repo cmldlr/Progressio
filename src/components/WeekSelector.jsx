@@ -1,43 +1,54 @@
-import React, { useEffect, useRef } from 'react';
-import { Plus, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useEffect, useRef, useMemo } from 'react';
+import { Plus, Trash2, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+import { addDays, format } from 'date-fns';
+import { tr } from 'date-fns/locale';
 
-export default function WeekSelector({ weeks, activeWeekId, onSelectWeek, onAddWeek, onDeleteWeek }) {
+export default function WeekSelector({
+    weeks,
+    activeWeekId,
+    onSelectWeek,
+    onAddWeek,
+    onDeleteWeek,
+    onResetWeek,
+    startDate
+}) {
     const scrollRef = useRef(null);
+    const maxWeekId = weeks.length > 0 ? Math.max(...weeks.map(w => w.id)) : 1;
 
-    // Aktif hafta değiştiğinde otomatik kaydır
     useEffect(() => {
         if (scrollRef.current) {
             const activeElement = scrollRef.current.querySelector('[data-active="true"]');
             if (activeElement) {
-                // Smooth scroll yerine auto scroll, kullanıcı tıkladığında rahatsız etmesin
                 activeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             }
         }
     }, [activeWeekId]);
 
+    const weeksWithDates = useMemo(() => {
+        const globalStart = startDate ? new Date(startDate) : new Date();
+        return weeks.map(week => {
+            const weekStart = addDays(globalStart, (week.id - 1) * 7);
+            const weekEnd = addDays(weekStart, 6);
+            return {
+                ...week,
+                dateRange: `${format(weekStart, 'd MMM', { locale: tr })} - ${format(weekEnd, 'd MMM', { locale: tr })}`
+            };
+        });
+    }, [weeks, startDate]);
+
     const handlePrev = () => {
-        if (activeWeekId > 1) {
-            onSelectWeek(activeWeekId - 1);
-        }
+        if (activeWeekId > 1) onSelectWeek(activeWeekId - 1);
     };
 
     const handleNext = () => {
-        // weeks listesinde son haftanın ID'sini bul
-        const maxId = weeks.length > 0 ? Math.max(...weeks.map(w => w.id)) : 1;
-        if (activeWeekId < maxId) {
-            onSelectWeek(activeWeekId + 1);
-        } else {
-            // Eğer son haftadaysak ve ileri basılırsa yeni hafta sorulabilir veya sadece disabled olur
-            // Şimdilik disabled mantığı UI da
-        }
+        if (activeWeekId < maxWeekId) onSelectWeek(activeWeekId + 1);
     };
 
     const isFirst = activeWeekId <= 1;
-    const isLast = weeks.length > 0 && activeWeekId >= Math.max(...weeks.map(w => w.id));
+    const isLast = activeWeekId >= maxWeekId;
 
     return (
-        <div className="flex items-center gap-2 mb-6">
-            {/* Prev Button */}
+        <div className="flex items-center gap-2 mb-6 pt-4">
             <button
                 onClick={handlePrev}
                 disabled={isFirst}
@@ -48,46 +59,62 @@ export default function WeekSelector({ weeks, activeWeekId, onSelectWeek, onAddW
                 <ChevronLeft size={20} />
             </button>
 
-            {/* Scrollable List */}
             <div
                 ref={scrollRef}
-                className="flex-1 flex items-center gap-2 overflow-x-auto pb-3 scrollbar-hide mask-fade px-1"
+                className="flex-1 flex items-center gap-3 overflow-x-auto pb-3 scrollbar-hide mask-fade px-1"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-                {weeks.map(week => {
+                {weeksWithDates.map(week => {
                     const isActive = activeWeekId === week.id;
+                    const isLastWeek = week.id === maxWeekId;
+                    const canDelete = isLastWeek && maxWeekId > 1;
+
                     return (
                         <div key={week.id} className="relative group flex-shrink-0">
                             <button
                                 onClick={() => onSelectWeek(week.id)}
                                 data-active={isActive}
                                 className={`
-                                    relative px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 transform border
+                                    relative px-4 py-2 rounded-xl font-medium text-sm transition-all duration-300 transform border flex flex-col items-center gap-0.5
                                     ${isActive
                                         ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 scale-100 border-indigo-600'
-                                        : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700 border-gray-200 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-800 scale-95'
+                                        : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700 border-gray-200 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-800 scale-95'
                                     }
                                 `}
                             >
-                                {week.label}
+                                <span className="font-bold">{week.label}</span>
+                                <span className={`text-[10px] ${isActive ? 'text-indigo-200' : 'text-gray-400 dark:text-slate-500'}`}>
+                                    {week.dateRange}
+                                </span>
                             </button>
 
-                            {/* Delete Button (Visible on Hover & if not only item) */}
-                            {weeks.length > 1 && (
+                            {/* Hover'da görünen butonlar - sağ tarafta */}
+                            <div className="absolute top-1/2 -translate-y-1/2 -right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10">
+                                {/* Sıfırla butonu */}
                                 <button
-                                    onClick={(e) => { e.stopPropagation(); onDeleteWeek(week.id); }}
-                                    className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 scale-90 hover:scale-100"
-                                    title="Haftayı Sil"
+                                    onClick={(e) => { e.stopPropagation(); onResetWeek(week.id); }}
+                                    className="bg-amber-500 hover:bg-amber-600 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+                                    title="İçeriği Sıfırla"
                                 >
-                                    <Trash2 size={10} />
+                                    <RotateCcw size={12} />
                                 </button>
-                            )}
+
+                                {/* Sil butonu - sadece son haftada */}
+                                {canDelete && (
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); onDeleteWeek(week.id); }}
+                                        className="bg-red-500 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+                                        title="Haftayı Sil"
+                                    >
+                                        <Trash2 size={12} />
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     );
                 })}
             </div>
 
-            {/* Next Button */}
             <button
                 onClick={handleNext}
                 disabled={isLast}
@@ -100,7 +127,6 @@ export default function WeekSelector({ weeks, activeWeekId, onSelectWeek, onAddW
 
             <div className="w-px h-8 bg-gray-200 dark:bg-slate-800 mx-1"></div>
 
-            {/* Add Button (Fixed Right) */}
             <button
                 onClick={onAddWeek}
                 className="flex-shrink-0 bg-indigo-50 dark:bg-indigo-900/10 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-dashed border-indigo-200 dark:border-indigo-800 p-2.5 rounded-xl transition-all hover:scale-105 shadow-sm"
@@ -111,4 +137,3 @@ export default function WeekSelector({ weeks, activeWeekId, onSelectWeek, onAddW
         </div>
     );
 }
-
