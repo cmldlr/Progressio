@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import BodyDiagram from './BodyDiagram';
+import BodyDiagramSVG from './BodyDiagramSVG';
 import WheelColorPicker from './WheelColorPicker'; // NEW IMPORT
 import {
     COLOR_OPTIONS,
@@ -364,7 +364,7 @@ export default function ExerciseEditor({
                         <div className="bg-gray-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 min-h-[300px]">
                             {selectionMode === 'body' ? (
                                 <div className="flex justify-center h-full">
-                                    <BodyDiagram
+                                    <BodyDiagramSVG
                                         selectedMuscles={selectedMuscles}
                                         onToggleMuscle={toggleMuscle}
                                         muscleGroups={muscleGroups}

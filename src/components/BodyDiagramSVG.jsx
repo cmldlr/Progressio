@@ -1,0 +1,193 @@
+import React, { useState } from 'react';
+
+// 265×532 piksel boyutundaki görüntüye göre koordinatlar (yüzdesel)
+// Görüntü: Kollar hafif açık, vücut tam ortalı
+// x, y = merkez nokta; width, height = boyutlar; mirror = simetrik x konumu
+
+const FRONT_MUSCLE_REGIONS = {
+    // GÖĞÜS - 3 ayrı yatay şerit
+    'upper_chest': { x: 50, y: 18, width: 28, height: 4, label: 'Üst Göğüs' },
+    'mid_chest': { x: 50, y: 23, width: 32, height: 5, label: 'Orta Göğüs' },
+    'lower_chest': { x: 50, y: 29, width: 28, height: 4, label: 'Alt Göğüs' },
+
+    // OMUZ - yanlarda üst kısım
+    'front_delt': { x: 28, y: 17, width: 11, height: 6, label: 'Ön Omuz', mirror: 72 },
+    'side_delt': { x: 22, y: 16, width: 7, height: 7, label: 'Yan Omuz', mirror: 78 },
+
+    // KOLLAR - hafif açık
+    'biceps': { x: 18, y: 28, width: 7, height: 11, label: 'Biceps', mirror: 82 },
+    'forearm': { x: 14, y: 42, width: 6, height: 11, label: 'Ön Kol', mirror: 86 },
+
+    // KARIN - ortada belirgin six-pack
+    'abs': { x: 50, y: 43, width: 18, height: 16, label: 'Karın' },
+    'obliques': { x: 36, y: 42, width: 7, height: 12, label: 'Yan Karın', mirror: 64 },
+
+    // BACAK
+    'quads': { x: 38, y: 64, width: 13, height: 18, label: 'Quadriceps', mirror: 62 },
+    'inner_thigh': { x: 46, y: 58, width: 6, height: 12, label: 'İç Bacak', mirror: 54 },
+    'calves': { x: 40, y: 88, width: 9, height: 10, label: 'Baldır', mirror: 60 },
+};
+
+const BACK_MUSCLE_REGIONS = {
+    // ÜST SIRT
+    'traps': { x: 50, y: 14, width: 26, height: 10, label: 'Trapez' },
+    'rear_delt': { x: 26, y: 17, width: 10, height: 7, label: 'Arka Omuz', mirror: 74 },
+
+    // SIRT
+    'rhomboids': { x: 50, y: 24, width: 16, height: 8, label: 'Orta Sırt' },
+    'lats': { x: 32, y: 32, width: 14, height: 14, label: 'Kanat (Lat)', mirror: 68 },
+    'lower_back': { x: 50, y: 44, width: 18, height: 10, label: 'Bel' },
+
+    // KOLLAR
+    'triceps': { x: 18, y: 28, width: 8, height: 10, label: 'Triceps', mirror: 82 },
+
+    // ALT VÜCUT
+    'glutes': { x: 40, y: 54, width: 16, height: 10, label: 'Kalça', mirror: 60 },
+    'hamstrings': { x: 38, y: 68, width: 14, height: 16, label: 'Hamstring', mirror: 62 },
+    'calves': { x: 40, y: 88, width: 10, height: 10, label: 'Baldır', mirror: 60 },
+};
+
+export default function BodyDiagramSVG({ selectedMuscles = [], onToggleMuscle, muscleGroups = {} }) {
+    const [view, setView] = useState('front');
+    const [hoveredMuscle, setHoveredMuscle] = useState(null);
+
+    const regions = view === 'front' ? FRONT_MUSCLE_REGIONS : BACK_MUSCLE_REGIONS;
+    const imageSrc = view === 'front' ? '/body_front.png' : '/body_back.png';
+
+    const getMuscleStyle = (isSelected, isHovered) => {
+        if (isSelected) {
+            return {
+                backgroundColor: 'rgba(99, 102, 241, 0.5)',
+                border: '2px solid #6366f1',
+                boxShadow: '0 0 8px rgba(99, 102, 241, 0.6)'
+            };
+        }
+        if (isHovered) {
+            return {
+                backgroundColor: 'rgba(96, 165, 250, 0.4)',
+                border: '2px solid #60a5fa'
+            };
+        }
+        return {
+            backgroundColor: 'transparent',
+            border: 'none'
+        };
+    };
+
+    const renderMuscleRegion = (muscleId, region) => {
+        const isSelected = selectedMuscles.includes(muscleId);
+        const isHovered = hoveredMuscle === muscleId;
+        const style = getMuscleStyle(isSelected, isHovered);
+
+        const createRegion = (x, key) => (
+            <div
+                key={key}
+                style={{
+                    left: `${x - region.width / 2}%`,
+                    top: `${region.y - region.height / 2}%`,
+                    width: `${region.width}%`,
+                    height: `${region.height}%`,
+                    ...style,
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    position: 'absolute',
+                    touchAction: 'manipulation',
+                    minWidth: '30px',
+                    minHeight: '30px',
+                }}
+                onClick={(e) => { e.stopPropagation(); onToggleMuscle(muscleId); }}
+                onMouseEnter={() => setHoveredMuscle(muscleId)}
+                onMouseLeave={() => setHoveredMuscle(null)}
+            />
+        );
+
+        const mainRegion = createRegion(region.x, muscleId);
+        const mirrorRegion = region.mirror ? createRegion(region.mirror, `${muscleId}-mirror`) : null;
+
+        return [mainRegion, mirrorRegion];
+    };
+
+    const getLabel = (id) => {
+        return muscleGroups[id]?.label ||
+            FRONT_MUSCLE_REGIONS[id]?.label ||
+            BACK_MUSCLE_REGIONS[id]?.label ||
+            id;
+    };
+
+    return (
+        <div className="flex flex-col items-center gap-4 w-full">
+            {/* View Switcher */}
+            <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl">
+                <button
+                    onClick={() => setView('front')}
+                    className={`px-5 py-2 text-sm font-semibold rounded-lg transition-all ${view === 'front'
+                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-md'
+                        : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
+                        }`}
+                >
+                    Önden
+                </button>
+                <button
+                    onClick={() => setView('back')}
+                    className={`px-5 py-2 text-sm font-semibold rounded-lg transition-all ${view === 'back'
+                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-md'
+                        : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
+                        }`}
+                >
+                    Arkadan
+                </button>
+            </div>
+
+            {/* Body Container */}
+            <div
+                className="relative select-none w-full max-w-[220px] sm:max-w-[265px]"
+                style={{ aspectRatio: '265 / 532' }}
+            >
+                {/* Hover Label */}
+                {hoveredMuscle && regions[hoveredMuscle] && (
+                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 z-30 bg-gray-900 dark:bg-slate-700 text-white text-sm px-3 py-1.5 rounded-full shadow-lg font-medium whitespace-nowrap">
+                        {regions[hoveredMuscle].label}
+                    </div>
+                )}
+
+                {/* Body Image */}
+                <img
+                    src={imageSrc}
+                    alt={`Vücut ${view === 'front' ? 'ön' : 'arka'} görünüm`}
+                    className="w-full h-full"
+                    draggable={false}
+                />
+
+                {/* Muscle Regions Overlay */}
+                {Object.entries(regions).map(([muscleId, region]) =>
+                    renderMuscleRegion(muscleId, region)
+                )}
+            </div>
+
+            {/* Selected Muscles */}
+            {selectedMuscles.length > 0 && (
+                <div className="w-full max-w-[280px]">
+                    <div className="text-xs text-gray-500 dark:text-slate-400 mb-2 text-center font-medium">
+                        Seçili ({selectedMuscles.length})
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 justify-center">
+                        {selectedMuscles.map(id => (
+                            <button
+                                key={id}
+                                onClick={() => onToggleMuscle(id)}
+                                className="text-[11px] bg-indigo-600 text-white px-2 py-1 rounded-full font-medium hover:bg-indigo-700 transition flex items-center gap-1"
+                            >
+                                {getLabel(id)} ×
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            <p className="text-[10px] text-gray-400 dark:text-slate-500 text-center">
+                Kas bölgesine tıkla = seç/kaldır
+            </p>
+        </div>
+    );
+}
