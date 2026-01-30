@@ -3,7 +3,7 @@ import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
     ResponsiveContainer, Area, AreaChart
 } from 'recharts';
-import { TrendingUp, TrendingDown, Minus, Calendar, Activity, Ruler, ChevronDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Calendar, Activity, Ruler, ChevronDown, Pencil, Trash2 } from 'lucide-react';
 import { format, subDays, subMonths, isAfter } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
@@ -35,7 +35,7 @@ const DATE_RANGES = [
     { id: '1y', label: 'Son 1 Yıl', filter: (date) => isAfter(new Date(date), subMonths(new Date(), 12)) },
 ];
 
-export default function ProgressCharts({ measurements = [] }) {
+export default function ProgressCharts({ measurements = [], onEdit, onDelete }) {
     const [activeTab, setActiveTab] = useState('general'); // general, tape
     const [selectedMetrics, setSelectedMetrics] = useState(['weight', 'body_fat_percent', 'muscle_mass']);
     const [dateRange, setDateRange] = useState('all');
@@ -50,6 +50,8 @@ export default function ProgressCharts({ measurements = [] }) {
             .map(m => {
                 const tape = m.tape_measurements || {};
                 return {
+                    id: m.id,
+                    originalData: m,
                     date: m.date,
                     displayDate: format(new Date(m.date), 'd MMM', { locale: tr }),
                     fullDate: format(new Date(m.date), 'd MMMM yyyy', { locale: tr }),
@@ -287,6 +289,10 @@ export default function ProgressCharts({ measurements = [] }) {
                                         {METRICS[metricId]?.label}
                                     </th>
                                 ))}
+                                <th className="px-4 py-3 text-right font-semibold text-gray-500 dark:text-slate-400 w-20">
+                                    İşlemler
+                                </th>
+
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
@@ -298,6 +304,25 @@ export default function ProgressCharts({ measurements = [] }) {
                                             {row[metricId] != null ? `${row[metricId]} ${METRICS[metricId]?.unit || ''}` : '-'}
                                         </td>
                                     ))}
+                                    <td className="px-4 py-3 text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <button
+                                                onClick={() => onEdit && onEdit(row.originalData)}
+                                                className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+                                                title="Düzenle"
+                                            >
+                                                <Pencil size={16} />
+                                            </button>
+                                            <button
+                                                onClick={() => onDelete && onDelete(row.id)}
+                                                className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                                title="Sil"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </td>
+
                                 </tr>
                             ))}
                         </tbody>

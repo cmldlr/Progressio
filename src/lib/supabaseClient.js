@@ -205,5 +205,19 @@ export const measurementsDB = {
             .eq('id', id);
 
         if (error) throw error;
+    },
+
+    // Ölçüm güncelle
+    update: async (id, measurementData) => {
+        if (!supabase) return null;
+        const { data, error } = await supabase
+            .from('measurements')
+            .update(measurementData)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
     }
 };

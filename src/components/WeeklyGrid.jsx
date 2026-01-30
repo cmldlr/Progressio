@@ -367,7 +367,7 @@ export default function WeeklyGrid({
                                                     disabled={isMismatch}
                                                     value={gridData[cellKey] || ''}
                                                     onChange={(e) => onCellChange(activeWeek.id, cellKey, e.target.value)}
-                                                    className={`w-full h-full min-h-[60px] p-2 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-all text-center text-sm font-medium resize-none overflow-hidden ${cellClass}`}
+                                                    className={`w-full min-h-[80px] p-2 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-all text-center text-sm font-medium resize-none overflow-y-auto ${cellClass}`}
                                                     style={cellStyle}
                                                     placeholder={isMismatch ? '' : '-'}
                                                 />

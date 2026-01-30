@@ -21,6 +21,7 @@ const DEFAULT_MUSCLE_GROUPS = {
     'quads': { id: 'quads', label: 'Quadriceps', category: 'Bacak' },
     'hamstrings': { id: 'hamstrings', label: 'Hamstring', category: 'Bacak' },
     'glutes': { id: 'glutes', label: 'Kalça', category: 'Bacak' },
+    'inner_thigh': { id: 'inner_thigh', label: 'İç Bacak', category: 'Bacak' },
     'calves': { id: 'calves', label: 'Baldır', category: 'Bacak' },
     'abs': { id: 'abs', label: 'Karın', category: 'Core' },
     'obliques': { id: 'obliques', label: 'Yan Karın', category: 'Core' },
@@ -206,26 +207,11 @@ export function useWorkoutData() {
             }
         });
 
-        // Visibility change handler - uygulama arka plandan geldiğinde session'ı yenile
+        // Visibility change handler - artık sadece uzun süreli arka plan için
+        // Session yenilemesi yapılmıyor, tarayıcı zaten Supabase token'ını yönetiyor
         const handleVisibilityChange = async () => {
-            if (document.visibilityState === 'visible' && userRef.current) {
-                try {
-                    // Session'ı yenile (token refresh)
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (session) {
-                        console.log('Session restored on visibility change');
-                    } else {
-                        // Session yoksa kullanıcıyı kontrol et
-                        const currentUser = await auth.getUser();
-                        if (!currentUser && userRef.current) {
-                            // Kullanıcı çıkış yapmış, state'i güncelle
-                            setUser(null);
-                        }
-                    }
-                } catch (err) {
-                    console.error('Visibility change session refresh error:', err);
-                }
-            }
+            // Intentionally empty - Supabase handles token refresh automatically
+            // Removing this logic to prevent unnecessary state changes
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);

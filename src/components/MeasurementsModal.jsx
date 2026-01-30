@@ -1,39 +1,60 @@
 import React, { useState } from 'react';
 import { X, Save, Ruler, Activity, ArrowRight } from 'lucide-react';
 
-export default function MeasurementsModal({ isOpen, onClose, onSave }) {
-    const [activeTab, setActiveTab] = useState('general'); // general, tape, tanita
+export default function MeasurementsModal({ isOpen, onClose, onSave, initialData = null }) {
+    const [activeTab, setActiveTab] = useState('general'); // general, tape
     const [loading, setLoading] = useState(false);
 
-    // Form State
-    const [formData, setFormData] = useState({
+    // Default State
+    const defaultState = {
         date: new Date().toISOString().split('T')[0],
         weight: '',
-        height: '', // BMI hesaplama için (opsiyonel, db'de yok ama UI'da olabilir)
-
-        // Tape
-        chest: '',
-        shoulder: '',
-        arm_right: '',
-        arm_left: '',
-        waist: '',
-        belly: '',
-        hip: '',
-        leg_right: '',
-        leg_left: '',
-        calf_right: '',
-        calf_left: '',
-
-        // Tanita / Body Comp
-        body_fat_percent: '',
-        muscle_mass: '',
-        water_percent: '',
-        visceral_fat: '',
-        bmr: '',
-        metabolic_age: '',
-
+        height: '',
+        chest: '', shoulder: '', arm_right: '', arm_left: '',
+        waist: '', belly: '', hip: '',
+        leg_right: '', leg_left: '', calf_right: '', calf_left: '',
+        body_fat_percent: '', muscle_mass: '', water_percent: '',
+        visceral_fat: '', bmr: '', metabolic_age: '',
         notes: ''
-    });
+    };
+
+    const [formData, setFormData] = useState(defaultState);
+
+    // Populate Form on Open
+    React.useEffect(() => {
+        if (isOpen) {
+            if (initialData) {
+                const tape = initialData.tape_measurements || {};
+                setFormData({
+                    date: initialData.date?.split('T')[0] || new Date().toISOString().split('T')[0],
+                    weight: initialData.weight || '',
+                    height: initialData.height || '',
+                    body_fat_percent: initialData.body_fat_percent || '',
+                    muscle_mass: initialData.muscle_mass || '',
+                    water_percent: initialData.water_percent || '',
+                    visceral_fat: initialData.visceral_fat || '',
+                    bmr: initialData.bmr || '',
+                    metabolic_age: initialData.metabolic_age || '',
+                    notes: initialData.notes || '',
+
+                    // Tape
+                    chest: tape.chest || '',
+                    shoulder: tape.shoulder || '',
+                    arm_right: tape.arm_right || '',
+                    arm_left: tape.arm_left || '',
+                    waist: tape.waist || '',
+                    belly: tape.belly || '',
+                    hip: tape.hip || '',
+                    leg_right: tape.leg_right || '',
+                    leg_left: tape.leg_left || '',
+                    calf_right: tape.calf_right || '',
+                    calf_left: tape.calf_left || ''
+                });
+            } else {
+                setFormData(defaultState);
+            }
+        }
+    }, [isOpen, initialData]);
 
     if (!isOpen) return null;
 
@@ -95,7 +116,7 @@ export default function MeasurementsModal({ isOpen, onClose, onSave }) {
                 <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-slate-800">
                     <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                         <Activity className="text-indigo-500" />
-                        Yeni Ölçüm Ekle
+                        {initialData ? 'Ölçümü Düzenle' : 'Yeni Ölçüm Ekle'}
                     </h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg text-gray-500">
                         <X className="w-5 h-5" />

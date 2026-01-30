@@ -47,38 +47,65 @@ export default function ExerciseEditor({
         'Tricep Extension', 'Tricep Pushdown', 'Upright Row', 'Walking Lunges'
     ].sort((a, b) => a.localeCompare(b, 'tr'));
 
-    // Otomatik Seçim Haritası
+    // Otomatik Seçim Haritası - TÜM COMMON_EXERCISES için default değerler
     const EXERCISE_DEFAULTS = {
+        // Push Exercises
         'Arnold Press': { workoutType: 'Push', muscles: ['front_delt', 'side_delt'] },
         'Bench Press': { workoutType: 'Push', muscles: ['mid_chest', 'front_delt', 'triceps'] },
-        'Incline Bench Press': { workoutType: 'Push', muscles: ['upper_chest', 'front_delt'] },
+        'Cable Crossover': { workoutType: 'Push', muscles: ['mid_chest', 'lower_chest'] },
+        'Cable Lateral Raise': { workoutType: 'Push', muscles: ['side_delt'] },
+        'Chest Fly': { workoutType: 'Push', muscles: ['mid_chest'] },
         'Chest Press': { workoutType: 'Push', muscles: ['mid_chest', 'triceps'] },
-        'Push Up': { workoutType: 'Push', muscles: ['mid_chest', 'triceps', 'front_delt'] },
         'Dips': { workoutType: 'Push', muscles: ['lower_chest', 'triceps'] },
-        'Overhead Press': { workoutType: 'Push', muscles: ['front_delt', 'triceps'] },
+        'Front Raise': { workoutType: 'Push', muscles: ['front_delt'] },
+        'Incline Bench Press': { workoutType: 'Push', muscles: ['upper_chest', 'front_delt'] },
+        'Incline Dumbbell Press': { workoutType: 'Push', muscles: ['upper_chest', 'front_delt'] },
         'Lateral Raise': { workoutType: 'Push', muscles: ['side_delt'] },
-        'Tricep Pushdown': { workoutType: 'Push', muscles: ['triceps'] },
+        'Overhead Press': { workoutType: 'Push', muscles: ['front_delt', 'triceps'] },
+        'Pec Deck': { workoutType: 'Push', muscles: ['mid_chest'] },
+        'Push Up': { workoutType: 'Push', muscles: ['mid_chest', 'triceps', 'front_delt'] },
+        'Shoulder Press': { workoutType: 'Push', muscles: ['front_delt', 'side_delt', 'triceps'] },
         'Skullcrusher': { workoutType: 'Push', muscles: ['triceps'] },
+        'Tricep Extension': { workoutType: 'Push', muscles: ['triceps'] },
+        'Tricep Pushdown': { workoutType: 'Push', muscles: ['triceps'] },
 
-        'Pull Up': { workoutType: 'Pull', muscles: ['lats', 'biceps'] },
-        'Lat Pulldown': { workoutType: 'Pull', muscles: ['lats', 'biceps'] },
+        // Pull Exercises
+        'Barbell Curl': { workoutType: 'Pull', muscles: ['biceps'] },
         'Barbell Row': { workoutType: 'Pull', muscles: ['lats', 'rhomboids'] },
-        'Seated Row': { workoutType: 'Pull', muscles: ['lats', 'rhomboids', 'traps'] },
-        'Face Pull': { workoutType: 'Pull', muscles: ['rear_delt', 'rhomboids'] },
         'Bicep Curl': { workoutType: 'Pull', muscles: ['biceps'] },
-        'Hammer Curl': { workoutType: 'Pull', muscles: ['biceps', 'forearm'] },
+        'Chin Up': { workoutType: 'Pull', muscles: ['lats', 'biceps'] },
         'Deadlift': { workoutType: 'Pull', muscles: ['lower_back', 'glutes', 'hamstrings'] },
+        'Face Pull': { workoutType: 'Pull', muscles: ['rear_delt', 'rhomboids'] },
+        'Hammer Curl': { workoutType: 'Pull', muscles: ['biceps', 'forearm'] },
+        'Lat Pulldown': { workoutType: 'Pull', muscles: ['lats', 'biceps'] },
+        'One Arm Dumbbell Row': { workoutType: 'Pull', muscles: ['lats', 'rhomboids'] },
+        'Preacher Curl': { workoutType: 'Pull', muscles: ['biceps'] },
+        'Pull Up': { workoutType: 'Pull', muscles: ['lats', 'biceps'] },
+        'Reverse Fly': { workoutType: 'Pull', muscles: ['rear_delt', 'rhomboids'] },
+        'Seated Row': { workoutType: 'Pull', muscles: ['lats', 'rhomboids', 'traps'] },
+        'Shrugs': { workoutType: 'Pull', muscles: ['traps'] },
+        'Sumo Deadlift': { workoutType: 'Pull', muscles: ['lower_back', 'glutes', 'inner_thigh'] },
+        'Upright Row': { workoutType: 'Pull', muscles: ['traps', 'side_delt'] },
 
-        'Squat': { workoutType: 'Legs', muscles: ['quads', 'glutes', 'lower_back'] },
+        // Leg Exercises
+        'Abductor Machine': { workoutType: 'Legs', muscles: ['glutes'] },
+        'Adductor Machine': { workoutType: 'Legs', muscles: ['inner_thigh'] },
+        'Bulgarian Split Squat': { workoutType: 'Legs', muscles: ['quads', 'glutes'] },
+        'Calf Raise': { workoutType: 'Legs', muscles: ['calves'] },
+        'Glute Bridge': { workoutType: 'Legs', muscles: ['glutes', 'hamstrings'] },
+        'Hack Squat': { workoutType: 'Legs', muscles: ['quads', 'glutes'] },
+        'Hip Thrust': { workoutType: 'Legs', muscles: ['glutes', 'hamstrings'] },
+        'Leg Curl': { workoutType: 'Legs', muscles: ['hamstrings'] },
+        'Leg Extension': { workoutType: 'Legs', muscles: ['quads'] },
         'Leg Press': { workoutType: 'Legs', muscles: ['quads', 'glutes'] },
         'Lunges': { workoutType: 'Legs', muscles: ['quads', 'glutes', 'hamstrings'] },
-        'Leg Extension': { workoutType: 'Legs', muscles: ['quads'] },
-        'Leg Curl': { workoutType: 'Legs', muscles: ['hamstrings'] },
-        'Calf Raise': { workoutType: 'Legs', muscles: ['calves'] },
         'Romanian Deadlift': { workoutType: 'Legs', muscles: ['hamstrings', 'glutes', 'lower_back'] },
+        'Squat': { workoutType: 'Legs', muscles: ['quads', 'glutes', 'lower_back'] },
+        'Walking Lunges': { workoutType: 'Legs', muscles: ['quads', 'glutes', 'hamstrings'] },
 
-        'Plank': { workoutType: 'Core', muscles: ['abs', 'core'] },
-        'Crunch': { workoutType: 'Core', muscles: ['abs'] }
+        // Core Exercises
+        'Crunch': { workoutType: 'Core', muscles: ['abs'] },
+        'Plank': { workoutType: 'Core', muscles: ['abs', 'core'] }
     };
 
     // ... (Existing useEffects) ...

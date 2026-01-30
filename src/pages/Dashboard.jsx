@@ -11,11 +11,37 @@ import { LogOut, Settings, Upload, Download, RefreshCw, Menu, Calendar, Clock, F
 
 export default function Dashboard() {
     const { data, activeWeek, actions, user, loading, syncStatus, syncError, signOut } = useWorkoutData();
-    const { measurements, addMeasurement, loading: measurementsLoading } = useMeasurements();
+    const { measurements, addMeasurement, updateMeasurement, deleteMeasurement, loading: measurementsLoading } = useMeasurements();
 
     const [showSettings, setShowSettings] = useState(false);
     const [showMeasurements, setShowMeasurements] = useState(false);
-    const [viewMode, setViewMode] = useState('weekly'); // 'weekly' | 'calendar' | 'progress'
+    const [editingMeasurement, setEditingMeasurement] = useState(null);
+
+    const handleEditMeasurement = (m) => {
+        setEditingMeasurement(m);
+        setShowMeasurements(true);
+    };
+
+    const handleSaveMeasurement = async (data) => {
+        if (editingMeasurement) {
+            await updateMeasurement(editingMeasurement.id, data);
+        } else {
+            await addMeasurement(data);
+        }
+    };
+
+    // viewMode'u localStorage'dan oku, yoksa 'weekly' kullan
+    const [viewMode, setViewMode] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('viewMode') || 'weekly';
+        }
+        return 'weekly';
+    });
+
+    // viewMode değiştiğinde localStorage'a kaydet
+    useEffect(() => {
+        localStorage.setItem('viewMode', viewMode);
+    }, [viewMode]);
 
     // Anlık Tarih/Saat State'i
     const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -312,7 +338,7 @@ export default function Dashboard() {
                 )}
 
                 {viewMode === 'progress' && (
-                    <ProgressCharts measurements={measurements} />
+                    <ProgressCharts measurements={measurements} onEdit={handleEditMeasurement} onDelete={deleteMeasurement} />
                 )}
             </main>
 
@@ -334,8 +360,9 @@ export default function Dashboard() {
 
             <MeasurementsModal
                 isOpen={showMeasurements}
-                onClose={() => setShowMeasurements(false)}
-                onSave={addMeasurement}
+                onClose={() => { setShowMeasurements(false); setEditingMeasurement(null); }}
+                onSave={handleSaveMeasurement}
+                initialData={editingMeasurement}
             />
         </div>
     );

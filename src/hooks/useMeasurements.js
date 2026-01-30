@@ -48,6 +48,22 @@ export function useMeasurements() {
         }
     };
 
+    // Update Measurement
+    const updateMeasurement = async (id, data) => {
+        try {
+            setError(null);
+            const updatedMeasurement = await measurementsDB.update(id, data);
+
+            // Update state
+            setMeasurements(prev => prev.map(m => m.id === id ? updatedMeasurement : m));
+            return updatedMeasurement;
+        } catch (err) {
+            console.error('Error updating measurement:', err);
+            setError('Güncelleme başarısız.');
+            throw err;
+        }
+    };
+
     // Delete Measurement
     const deleteMeasurement = async (id) => {
         if (!window.confirm("Bu ölçüm kaydını silmek istediğinize emin misiniz?")) return;
@@ -66,6 +82,7 @@ export function useMeasurements() {
         loading,
         error,
         addMeasurement,
+        updateMeasurement,
         deleteMeasurement,
         refresh: loadMeasurements
     };
