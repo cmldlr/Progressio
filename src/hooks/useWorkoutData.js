@@ -67,7 +67,6 @@ export function useWorkoutData() {
     const [syncError, setSyncError] = useState(null);
     const saveTimeoutRef = useRef(null);
     const userRef = useRef(null); // Visibility handler için ref
-    const initializedRef = useRef(false); // Init çalıştı mı flag
 
     // User state değiştiğinde ref'i güncelle
     useEffect(() => {
@@ -148,11 +147,6 @@ export function useWorkoutData() {
     // --- Init Logic ---
     useEffect(() => {
         const init = async () => {
-            // Zaten init çalıştıysa tekrar çalıştırma
-            if (initializedRef.current) {
-                return;
-            }
-
             setLoading(true);
             const currentUser = await auth.getUser();
             setUser(currentUser);
@@ -202,17 +196,12 @@ export function useWorkoutData() {
                     setSyncStatus('error');
                 }
             }
-            initializedRef.current = true; // Init tamamlandı
             setLoading(false);
         };
 
         const { data: { subscription } } = auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN') {
-                initializedRef.current = false; // Flag'i sıfırla ki init tekrar çalışsın
-                init();
-            }
+            if (event === 'SIGNED_IN') init();
             if (event === 'SIGNED_OUT') {
-                initializedRef.current = false; // Logout'ta da sıfırla
                 setUser(null);
                 setWeeksCache({});
             }
