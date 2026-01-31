@@ -207,15 +207,18 @@ export function useWorkoutData() {
         };
 
         const { data: { subscription } } = auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN') {
-                initializedRef.current = false; // Flag'i sıfırla ki init tekrar çalışsın
+            // TOKEN_REFRESHED ve INITIAL_SESSION eventlerinde reinit yapma
+            // Sadece gerçek SIGNED_IN ve SIGNED_OUT olaylarında tepki ver
+            if (event === 'SIGNED_IN' && !initializedRef.current) {
+                initializedRef.current = false;
                 init();
             }
             if (event === 'SIGNED_OUT') {
-                initializedRef.current = false; // Logout'ta da sıfırla
+                initializedRef.current = false;
                 setUser(null);
                 setWeeksCache({});
             }
+            // TOKEN_REFRESHED, INITIAL_SESSION, USER_UPDATED eventlerini yoksay
         });
 
         // Visibility change handler - artık sadece uzun süreli arka plan için

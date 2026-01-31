@@ -233,7 +233,7 @@ export default function SettingsPanel({
                         </div>
                     )}
 
-                    {/* Colors Tab Content */}
+                    {/* YENİ: Renk Antrenman Eşleşmeleri */}
                     {activeTab === 'colors' && (
                         <div className="space-y-4">
                             <div className="bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/50 rounded-lg p-4">
@@ -263,32 +263,6 @@ export default function SettingsPanel({
                                         );
                                     })}
                                 </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Program Ayarları (Başlangıç Tarihi) */}
-                    {activeTab === 'program' && (
-                        <div className="space-y-4">
-                            <div className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900/50 rounded-lg p-4">
-                                <h4 className="text-sm font-bold text-indigo-800 dark:text-indigo-300 mb-3">Program Başlangıcı</h4>
-                                <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
-                                    Bu tarih, 1. Haftanın başlangıcı olarak kabul edilir. Tüm haftalar bu tarihe göre hesaplanır.
-                                </p>
-
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Başlangıç Tarihi Seçin
-                                </label>
-                                <input
-                                    type="date"
-                                    value={startDate ? startDate.split('T')[0] : ''}
-                                    onChange={(e) => {
-                                        if (onUpdateStartDate && e.target.value) {
-                                            onUpdateStartDate(new Date(e.target.value).toISOString());
-                                        }
-                                    }}
-                                    className="w-full p-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
-                                />
                             </div>
                         </div>
                     )}
@@ -327,6 +301,33 @@ export default function SettingsPanel({
                                 >
                                     Kaydet & Kapat
                                 </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Program Tab */}
+                    {activeTab === 'program' && (
+                        <div className="space-y-4">
+                            <div className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900/50 rounded-lg p-4">
+                                <h4 className="text-sm font-bold text-indigo-800 dark:text-indigo-300 mb-3">📅 Program Başlangıç Tarihi</h4>
+                                <p className="text-sm text-indigo-700 dark:text-indigo-400 mb-4">
+                                    Bu tarih, 1. Haftanın başlangıcı olarak kabul edilir. Hafta numaraları bu tarihe göre hesaplanır.
+                                </p>
+                                <input
+                                    type="date"
+                                    value={startDate ? startDate.split('T')[0] : ''}
+                                    onChange={(e) => {
+                                        if (onUpdateStartDate && e.target.value) {
+                                            onUpdateStartDate(new Date(e.target.value).toISOString());
+                                        }
+                                    }}
+                                    className="w-full p-3 border border-gray-300 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                />
+                                {startDate && (
+                                    <p className="mt-3 text-xs text-indigo-600 dark:text-indigo-400">
+                                        Mevcut başlangıç: {new Date(startDate).toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                    </p>
+                                )}
                             </div>
                         </div>
                     )}
