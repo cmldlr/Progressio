@@ -109,29 +109,38 @@ export default function MeasurementsModal({ isOpen, onClose, onSave, initialData
     ];
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-800 max-h-[90vh] flex flex-col overflow-hidden">
 
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-slate-800">
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                        <Activity className="text-indigo-500" />
-                        {initialData ? 'Ölçümü Düzenle' : 'Yeni Ölçüm Ekle'}
-                    </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg text-gray-500">
-                        <X className="w-5 h-5" />
-                    </button>
+                <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 dark:from-slate-800 dark:via-slate-900 dark:to-black p-6 text-white">
+                    <div className="absolute inset-0 opacity-10">
+                        <div className="absolute top-2 left-2 w-24 h-24 bg-white rounded-full blur-3xl" />
+                    </div>
+                    <div className="relative flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
+                                <Activity className="w-5 h-5 text-white" />
+                            </div>
+                            <h2 className="text-xl font-bold">
+                                {initialData ? 'Ölçümü Düzenle' : 'Yeni Ölçüm Ekle'}
+                            </h2>
+                        </div>
+                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors">
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-4 px-6 pt-4 border-b border-gray-100 dark:border-slate-800 overflow-x-auto">
+                <div className="flex gap-4 px-6 pt-4 border-b border-gray-200 dark:border-slate-800 overflow-x-auto bg-white dark:bg-slate-900">
                     {tabs.map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex items-center gap-2 px-4 py-3 font-medium text-sm transition-all border-b-2 whitespace-nowrap
                                 ${activeTab === tab.id
-                                    ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                                    ? 'border-gray-900 dark:border-white text-gray-900 dark:text-white'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-slate-300'}`}
                         >
                             <tab.icon className="w-4 h-4" />
@@ -219,7 +228,7 @@ export default function MeasurementsModal({ isOpen, onClose, onSave, initialData
                 </form>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-gray-100 dark:border-slate-800 flex justify-end gap-3 bg-gray-50 dark:bg-slate-900/50 rounded-b-2xl">
+                <div className="p-5 border-t border-gray-200 dark:border-slate-800 flex justify-end gap-3 bg-white dark:bg-slate-900">
                     <button
                         onClick={onClose}
                         className="px-5 py-2.5 rounded-xl font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
@@ -229,7 +238,7 @@ export default function MeasurementsModal({ isOpen, onClose, onSave, initialData
                     <button
                         onClick={handleSubmit}
                         disabled={loading}
-                        className="px-5 py-2.5 rounded-xl font-medium bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+                        className="px-6 py-2.5 rounded-xl font-semibold bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 shadow-lg flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50"
                     >
                         {loading ? 'Kaydediliyor...' : 'Kaydet'}
                         {!loading && <Save className="w-4 h-4" />}

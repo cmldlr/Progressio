@@ -78,12 +78,12 @@ export default function SettingsPanel({
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50">
+                <div className="flex border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900">
                     <button
                         onClick={() => setActiveTab('muscles')}
                         className={`flex-1 px-4 py-3 text-sm font-medium transition ${activeTab === 'muscles'
-                            ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 bg-white dark:bg-slate-900'
-                            : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800'
+                            ? 'text-gray-900 dark:text-white border-b-2 border-gray-900 dark:border-white bg-gray-50 dark:bg-slate-800'
+                            : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'
                             }`}
                     >
                         💪 Kas Grupları
@@ -91,8 +91,8 @@ export default function SettingsPanel({
                     <button
                         onClick={() => setActiveTab('workouts')}
                         className={`flex-1 px-4 py-3 text-sm font-medium transition ${activeTab === 'workouts'
-                            ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 bg-white dark:bg-slate-900'
-                            : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800'
+                            ? 'text-gray-900 dark:text-white border-b-2 border-gray-900 dark:border-white bg-gray-50 dark:bg-slate-800'
+                            : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'
                             }`}
                     >
                         🏋️ Tipler
@@ -100,8 +100,8 @@ export default function SettingsPanel({
                     <button
                         onClick={() => setActiveTab('colors')}
                         className={`flex-1 px-4 py-3 text-sm font-medium transition ${activeTab === 'colors'
-                            ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 bg-white dark:bg-slate-900'
-                            : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800'
+                            ? 'text-gray-900 dark:text-white border-b-2 border-gray-900 dark:border-white bg-gray-50 dark:bg-slate-800'
+                            : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'
                             }`}
                     >
                         🎨 Renkler
@@ -109,8 +109,8 @@ export default function SettingsPanel({
                     <button
                         onClick={() => setActiveTab('program')}
                         className={`flex-1 px-4 py-3 text-sm font-medium transition ${activeTab === 'program'
-                            ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 bg-white dark:bg-slate-900'
-                            : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800'
+                            ? 'text-gray-900 dark:text-white border-b-2 border-gray-900 dark:border-white bg-gray-50 dark:bg-slate-800'
+                            : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'
                             }`}
                     >
                         📅 Program
@@ -122,8 +122,8 @@ export default function SettingsPanel({
                     {activeTab === 'muscles' && (
                         <div className="space-y-4">
                             {/* Yeni Kas Grubu Ekle */}
-                            <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900/50 rounded-lg p-4">
-                                <h4 className="text-sm font-bold text-green-800 dark:text-green-300 mb-3">+ Yeni Kas Grubu Ekle</h4>
+                            <div className="bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+                                <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">+ Yeni Kas Grubu Ekle</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                                     <input
                                         type="text"
@@ -147,7 +147,7 @@ export default function SettingsPanel({
                                     </datalist>
                                     <button
                                         onClick={handleAddMuscle}
-                                        className="bg-green-600 dark:bg-green-700 text-white rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition font-medium text-sm"
+                                        className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition font-medium text-sm"
                                     >
                                         Ekle
                                     </button>
@@ -187,8 +187,8 @@ export default function SettingsPanel({
                     {activeTab === 'workouts' && (
                         <div className="space-y-4">
                             {/* Yeni Antrenman Tipi Ekle */}
-                            <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-lg p-4">
-                                <h4 className="text-sm font-bold text-blue-800 dark:text-blue-300 mb-3">+ Yeni Antrenman Tipi Ekle</h4>
+                            <div className="bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+                                <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">+ Yeni Antrenman Tipi Ekle</h4>
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
@@ -200,7 +200,7 @@ export default function SettingsPanel({
                                     />
                                     <button
                                         onClick={handleAddWorkoutType}
-                                        className="px-4 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition font-medium text-sm"
+                                        className="px-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition font-medium text-sm"
                                     >
                                         Ekle
                                     </button>
@@ -236,8 +236,8 @@ export default function SettingsPanel({
                     {/* YENİ: Renk Antrenman Eşleşmeleri */}
                     {activeTab === 'colors' && (
                         <div className="space-y-4">
-                            <div className="bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/50 rounded-lg p-4">
-                                <p className="text-sm text-purple-800 dark:text-purple-300 mb-4">
+                            <div className="bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+                                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                                     Antrenman tiplerine özel renkler atayın. Gün düzenlerken seçtiğiniz tipe göre günün rengi otomatik ayarlanır.
                                 </p>
 
@@ -246,7 +246,7 @@ export default function SettingsPanel({
                                         const currentColor = workoutColors?.[type] || '#9ca3af';
 
                                         return (
-                                            <div key={type} className="flex items-center justify-between bg-white dark:bg-slate-900 p-3 rounded-lg border border-gray-100 dark:border-slate-800 shadow-sm hover:border-indigo-200 transition-colors">
+                                            <div key={type} className="flex items-center justify-between bg-white dark:bg-slate-900 p-3 rounded-lg border border-gray-100 dark:border-slate-800 shadow-sm hover:border-gray-300 dark:hover:border-slate-600 transition-colors">
                                                 <span className="font-medium text-gray-700 dark:text-gray-200">{type}</span>
 
                                                 <button
@@ -334,10 +334,10 @@ export default function SettingsPanel({
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50 flex justify-end">
+                <div className="p-4 border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex justify-end">
                     <button
                         onClick={onClose}
-                        className="px-5 py-2 bg-gray-700 dark:bg-slate-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-slate-600 transition font-medium"
+                        className="px-6 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transition font-semibold shadow-lg"
                     >
                         Kapat
                     </button>

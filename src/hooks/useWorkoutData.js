@@ -207,12 +207,14 @@ export function useWorkoutData() {
         };
 
         const { data: { subscription } } = auth.onAuthStateChange((event, session) => {
-            // TOKEN_REFRESHED ve INITIAL_SESSION eventlerinde reinit yapma
-            // Sadece gerçek SIGNED_IN ve SIGNED_OUT olaylarında tepki ver
-            if (event === 'SIGNED_IN' && !initializedRef.current) {
-                initializedRef.current = false;
-                init();
+            // SIGNED_IN: Kullanıcı giriş yaptığında ve henüz init çalışmamışsa
+            if (event === 'SIGNED_IN' && session?.user) {
+                // Eğer daha önce init çalışmadıysa veya farklı bir kullanıcıysa
+                if (!initializedRef.current) {
+                    init();
+                }
             }
+            // SIGNED_OUT: Kullanıcı çıkış yaptığında
             if (event === 'SIGNED_OUT') {
                 initializedRef.current = false;
                 setUser(null);

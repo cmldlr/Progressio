@@ -115,8 +115,10 @@ export default function ProgressCharts({ measurements = [], onEdit, onDelete }) 
     if (measurements.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-                <Activity className="w-16 h-16 text-gray-300 dark:text-slate-700 mb-4" />
-                <h3 className="text-xl font-bold text-gray-600 dark:text-slate-400 mb-2">
+                <div className="w-20 h-20 bg-gray-900/10 dark:bg-white/10 rounded-2xl flex items-center justify-center mb-6">
+                    <Activity className="w-10 h-10 text-gray-400 dark:text-slate-500" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-700 dark:text-slate-300 mb-2">
                     Henüz Ölçüm Yok
                 </h3>
                 <p className="text-gray-500 dark:text-slate-500 max-w-md">
@@ -157,15 +159,15 @@ export default function ProgressCharts({ measurements = [], onEdit, onDelete }) 
             )}
 
             {/* Controls */}
-            <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-100 dark:border-slate-800">
+            <div className="flex flex-wrap items-center justify-between gap-4 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-slate-800 dark:via-slate-900 dark:to-slate-900 p-4 rounded-xl border border-gray-700 dark:border-slate-700 shadow-lg">
                 {/* Tabs */}
                 <div className="flex gap-2">
                     <button
                         onClick={() => { setActiveTab('general'); setSelectedMetrics(['weight', 'body_fat_percent', 'muscle_mass']); }}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all
                             ${activeTab === 'general'
-                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
-                                : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700'}`}
+                                ? 'bg-white text-gray-900 shadow-lg'
+                                : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
                     >
                         <Activity size={16} />
                         Genel
@@ -174,8 +176,8 @@ export default function ProgressCharts({ measurements = [], onEdit, onDelete }) 
                         onClick={() => { setActiveTab('tape'); setSelectedMetrics(['chest', 'waist', 'arm_right']); }}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all
                             ${activeTab === 'tape'
-                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
-                                : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700'}`}
+                                ? 'bg-white text-gray-900 shadow-lg'
+                                : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
                     >
                         <Ruler size={16} />
                         Mezura
@@ -188,10 +190,10 @@ export default function ProgressCharts({ measurements = [], onEdit, onDelete }) 
                     <select
                         value={dateRange}
                         onChange={(e) => setDateRange(e.target.value)}
-                        className="bg-gray-100 dark:bg-slate-800 border-0 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                        className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm font-medium text-white focus:ring-2 focus:ring-white/30 cursor-pointer"
                     >
                         {DATE_RANGES.map(range => (
-                            <option key={range.id} value={range.id}>{range.label}</option>
+                            <option key={range.id} value={range.id} className="bg-gray-900 text-white">{range.label}</option>
                         ))}
                     </select>
                 </div>
@@ -203,13 +205,13 @@ export default function ProgressCharts({ measurements = [], onEdit, onDelete }) 
                     <button
                         key={metric.id}
                         onClick={() => toggleMetric(metric.id)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border
                             ${selectedMetrics.includes(metric.id)
-                                ? 'text-white border-transparent shadow-md'
-                                : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400 border-gray-200 dark:border-slate-700 hover:border-gray-300'
+                                ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white shadow-md'
+                                : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400 border-gray-200 dark:border-slate-700 hover:border-gray-400 dark:hover:border-slate-500'
                             }`}
-                        style={selectedMetrics.includes(metric.id) ? { backgroundColor: metric.color } : {}}
                     >
+                        <span className="inline-block w-2 h-2 rounded-full mr-1.5" style={{ backgroundColor: metric.color }}></span>
                         {metric.label}
                     </button>
                 ))}

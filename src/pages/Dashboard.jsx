@@ -140,15 +140,15 @@ export default function Dashboard() {
 
         return (
             <div
-                className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 bg-opacity-70 dark:bg-slate-800 dark:bg-opacity-50 rounded-full border border-gray-200 dark:border-slate-700 cursor-help transition-all"
+                className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 cursor-help transition-all"
                 title={syncError || "Senkronizasyon Durumu"}
                 onClick={() => syncStatus === 'error' && alert(syncError)}
             >
-                <span className={`w-2 h-2 rounded-full ${syncStatus === 'synced' ? 'bg-green-500' :
-                    syncStatus === 'syncing' ? 'bg-blue-500' :
-                        syncStatus === 'error' ? 'bg-red-500' : 'bg-gray-400'
+                <span className={`w-2 h-2 rounded-full ${syncStatus === 'synced' ? 'bg-green-400' :
+                    syncStatus === 'syncing' ? 'bg-blue-400' :
+                        syncStatus === 'error' ? 'bg-red-400' : 'bg-gray-400'
                     } `} />
-                <span className={`text-xs font-medium hidden sm:inline ${syncStatus === 'error' ? 'text-red-500' : 'text-gray-600 dark:text-gray-400'}`}>
+                <span className={`text-xs font-medium hidden sm:inline ${syncStatus === 'error' ? 'text-red-300' : 'text-gray-200'}`}>
                     {status.label.length > 20 ? status.label.substring(0, 17) + '...' : status.label}
                 </span>
             </div>
@@ -160,16 +160,16 @@ export default function Dashboard() {
     return (
         <div className="min-h-screen bg-gray-50/50 dark:bg-slate-950 transition-colors duration-300">
             {/* Dashboard Header */}
-            <header className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 sticky top-0 z-40 shadow-sm transition-colors duration-300">
+            <header className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 border-b border-gray-700 dark:border-slate-700 sticky top-0 z-40 shadow-lg transition-colors duration-300">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
 
                     {/* LEFT: Logo & Sync */}
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-indigo-500/30 shadow-lg">P</div>
-                            <span className="font-bold text-gray-900 dark:text-white hidden md:block text-lg tracking-tight">Progressio</span>
+                            <div className="w-9 h-9 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center text-white font-bold border border-white/20">P</div>
+                            <span className="font-bold text-white hidden md:block text-lg tracking-tight">Progressio</span>
                         </div>
-                        <div className="h-6 w-px bg-gray-200 dark:bg-slate-700 hidden md:block" />
+                        <div className="h-6 w-px bg-gray-600 dark:bg-slate-600 hidden md:block" />
 
                         {/* Sync Indicator - Visible on Mobile now */}
                         <div className="flex md:block">
@@ -178,22 +178,22 @@ export default function Dashboard() {
                     </div>
 
                     {/* CENTER: Date & Time & Focus Toggle & Theme Toggle */}
-                    <div className="hidden lg:flex items-center gap-4 bg-gray-50 dark:bg-slate-800/50 px-4 py-1.5 rounded-full border border-gray-100 dark:border-slate-700/50 backdrop-blur-sm">
-                        <div className="flex items-center gap-2 text-gray-600 dark:text-slate-300 text-sm font-medium">
-                            <Calendar className="w-4 h-4 text-indigo-500" />
+                    <div className="hidden lg:flex items-center gap-4 bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/20">
+                        <div className="flex items-center gap-2 text-gray-200 text-sm font-medium">
+                            <Calendar className="w-4 h-4 text-gray-300" />
                             {formattedDate}
                         </div>
-                        <div className="w-px h-4 bg-gray-300 dark:bg-slate-600" />
-                        <div className="flex items-center gap-2 text-gray-600 dark:text-slate-300 text-sm font-medium">
-                            <Clock className="w-4 h-4 text-indigo-500" />
+                        <div className="w-px h-4 bg-gray-500" />
+                        <div className="flex items-center gap-2 text-gray-200 text-sm font-medium">
+                            <Clock className="w-4 h-4 text-gray-300" />
                             {formattedTime}
                         </div>
-                        <div className="w-px h-4 bg-gray-300 dark:bg-slate-600" />
+                        <div className="w-px h-4 bg-gray-500" />
 
                         {/* Focus Mode Toggle */}
                         <button
                             onClick={() => setFocusMode(!focusMode)}
-                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${focusMode ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20' : 'bg-gray-200 dark:bg-slate-700 text-gray-500 dark:text-slate-400 hover:bg-gray-300 dark:hover:bg-slate-600'}`}
+                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${focusMode ? 'bg-white text-gray-900 shadow-md' : 'bg-white/20 text-gray-300 hover:bg-white/30'}`}
                             title="Sadece bugünün antrenmanlarını göster"
                         >
                             <Filter className="w-3 h-3" />
@@ -206,7 +206,7 @@ export default function Dashboard() {
                         {/* Toggle Theme Button (Mobile & Desktop) */}
                         <button
                             onClick={() => setDarkMode(!darkMode)}
-                            className="p-2 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                            className="p-2 rounded-lg text-gray-300 hover:bg-white/10 transition-colors"
                             title={darkMode ? 'Aydınlık Mod' : 'Karanlık Mod'}
                         >
                             {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -215,40 +215,40 @@ export default function Dashboard() {
                         {/* Mobile Focus Toggle (visible only on small screens) */}
                         <button
                             onClick={() => setFocusMode(!focusMode)}
-                            className={`lg:hidden p-2 rounded-lg transition ${focusMode ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-slate-400'}`}
+                            className={`lg:hidden p-2 rounded-lg transition ${focusMode ? 'bg-white/20 text-white' : 'text-gray-300'}`}
                         >
                             <Filter className="w-5 h-5" />
                         </button>
 
                         {/* Tools Menu */}
-                        <div className="flex items-center gap-1 sm:gap-2 mr-2 sm:mr-4 border-l border-gray-200 dark:border-slate-700 pl-2 ml-2">
+                        <div className="flex items-center gap-1 sm:gap-2 mr-2 sm:mr-4 border-l border-gray-600 pl-2 ml-2">
                             {/* Ölçüm Ekle Butonu */}
                             <button
                                 onClick={() => setShowMeasurements(true)}
-                                className="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition"
+                                className="p-2 text-gray-300 hover:bg-white/10 rounded-lg transition"
                                 title="Ölçüm Ekle"
                             >
                                 <Activity className="w-5 h-5" />
                             </button>
 
-                            <button onClick={() => setShowSettings(true)} className="p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition" title="Ayarlar">
+                            <button onClick={() => setShowSettings(true)} className="p-2 text-gray-300 hover:bg-white/10 rounded-lg transition" title="Ayarlar">
                                 <Settings className="w-5 h-5" />
                             </button>
-                            <button onClick={handleExport} className="hidden md:block p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition" title="Yedek İndir">
+                            <button onClick={handleExport} className="hidden md:block p-2 text-gray-300 hover:bg-white/10 rounded-lg transition" title="Yedek İndir">
                                 <Download className="w-5 h-5" />
                             </button>
-                            <label className="hidden md:block p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition cursor-pointer" title="Yedek Yükle">
+                            <label className="hidden md:block p-2 text-gray-300 hover:bg-white/10 rounded-lg transition cursor-pointer" title="Yedek Yükle">
                                 <Upload className="w-5 h-5" />
                                 <input type="file" onChange={handleImport} className="hidden" accept=".json" />
                             </label>
                         </div>
 
                         {/* User Profile */}
-                        <div className="flex items-center gap-3 pl-4 border-l border-gray-200 dark:border-slate-700">
-                            <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium shadow-md shadow-indigo-500/20 cursor-pointer hover:scale-105 transition-transform" title={user?.email}>
+                        <div className="flex items-center gap-3 pl-4 border-l border-gray-600">
+                            <div className="w-9 h-9 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white font-medium border border-white/20 cursor-pointer hover:scale-105 transition-transform" title={user?.email}>
                                 {user?.email?.[0].toUpperCase()}
                             </div>
-                            <button onClick={signOut} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition ml-1" title="Çıkış Yap">
+                            <button onClick={signOut} className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition ml-1" title="Çıkış Yap">
                                 <LogOut className="w-5 h-5" />
                             </button>
                         </div>
@@ -258,30 +258,30 @@ export default function Dashboard() {
 
             {/* View Toggle */}
             <div className="container mx-auto px-4 mt-6">
-                <div className="flex p-1 bg-gray-200 dark:bg-slate-800 rounded-xl w-fit">
+                <div className="flex p-1 bg-gray-100 dark:bg-slate-800/50 rounded-xl w-fit border border-gray-200 dark:border-slate-700">
                     <button
                         onClick={() => setViewMode('weekly')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === 'weekly'
-                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'weekly'
+                            ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-sm'
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                             }`}
                     >
                         Haftalık Program
                     </button>
                     <button
                         onClick={() => setViewMode('calendar')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === 'calendar'
-                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'calendar'
+                            ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-sm'
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                             }`}
                     >
                         Takvim
                     </button>
                     <button
                         onClick={() => setViewMode('progress')}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === 'progress'
-                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                        className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'progress'
+                            ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-sm'
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                             }`}
                     >
                         <TrendingUp size={16} />

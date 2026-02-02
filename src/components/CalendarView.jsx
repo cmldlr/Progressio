@@ -31,12 +31,12 @@ const DayCell = React.memo(({ day, info, isCurrentMonth, isToday, onClick }) => 
             onClick={() => onClick(day, info)}
             className={`
                 min-h-[100px] p-2 rounded-xl border transition-all relative group cursor-pointer
-                ${isCurrentMonth ? 'border-gray-100 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md' : 'opacity-40 border-transparent'}
-                ${isToday ? 'ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-slate-900' : ''}
+                ${isCurrentMonth ? 'border-gray-100 dark:border-slate-800 hover:border-gray-400 dark:hover:border-slate-600 hover:shadow-md' : 'opacity-40 border-transparent'}
+                ${isToday ? 'ring-2 ring-gray-900 dark:ring-white ring-offset-2 dark:ring-offset-slate-900' : ''}
                 bg-gray-50 dark:bg-slate-800/50
             `}
         >
-            <span className={`text-sm font-medium ${isToday ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-gray-700 dark:text-gray-300'}`}>
+            <span className={`text-sm font-medium ${isToday ? 'text-gray-900 dark:text-white font-bold' : 'text-gray-700 dark:text-gray-300'}`}>
                 {format(day, 'd')}
             </span>
 
@@ -56,7 +56,7 @@ const DayCell = React.memo(({ day, info, isCurrentMonth, isToday, onClick }) => 
                 </div>
             ) : info.hasData ? (
                 <div className="mt-2 flex justify-center">
-                    <div className="w-2 h-2 bg-indigo-400 rounded-full" title="Veri var" />
+                    <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full" title="Veri var" />
                 </div>
             ) : null}
 
@@ -247,14 +247,14 @@ export default function CalendarView({ data, actions, onNavigate }) {
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white capitalize flex items-center gap-2">
-                    <CalendarIcon className="text-indigo-500" />
+                    <CalendarIcon className="text-gray-600 dark:text-gray-400" />
                     {format(currentDate, 'MMMM yyyy', { locale: tr })}
                 </h2>
                 <div className="flex gap-2">
-                    <button onClick={prevMonth} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                    <button onClick={prevMonth} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors border border-gray-200 dark:border-slate-700">
                         <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                     </button>
-                    <button onClick={nextMonth} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                    <button onClick={nextMonth} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors border border-gray-200 dark:border-slate-700">
                         <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                     </button>
                 </div>

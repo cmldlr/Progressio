@@ -25,19 +25,19 @@ export default function LandingPage() {
             </div>
 
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border-b border-gray-100/50 dark:border-slate-800/50">
+            <nav className="sticky top-0 z-50 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 border-b border-gray-700 dark:border-slate-700 shadow-lg">
                 <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg sm:text-xl shadow-lg shadow-indigo-500/30">
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center text-white font-bold text-lg sm:text-xl border border-white/20">
                             P
                         </div>
-                        <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text">
+                        <span className="text-lg sm:text-xl font-bold text-white">
                             Progressio
                         </span>
                     </div>
                     <button
                         onClick={() => setShowAuth(true)}
-                        className="px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full font-medium hover:shadow-lg hover:shadow-indigo-500/30 transition-all duration-300 text-sm sm:text-base"
+                        className="px-5 sm:px-6 py-2 sm:py-2.5 bg-white text-gray-900 rounded-xl font-semibold hover:bg-gray-100 transition-all duration-300 text-sm sm:text-base shadow-lg"
                     >
                         Giriş Yap
                     </button>
@@ -50,43 +50,43 @@ export default function LandingPage() {
                     <div className={`text-center transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
 
                         {/* Version Badge */}
-                        <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/40 dark:to-purple-900/40 text-indigo-700 dark:text-indigo-300 rounded-full text-xs sm:text-sm font-medium mb-6 sm:mb-8 border border-indigo-100/50 dark:border-indigo-800/50 shadow-sm">
+                        <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-900/10 dark:bg-white/10 text-gray-700 dark:text-gray-300 rounded-full text-xs sm:text-sm font-medium mb-6 sm:mb-8 border border-gray-200 dark:border-white/20 backdrop-blur-sm">
                             <span className="relative flex h-2 w-2">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                             </span>
-                            v2.5 Yayında — Yeni Özellikler
+                            Açık Kaynak · Ücretsiz
                         </div>
 
                         {/* Main Heading */}
                         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 dark:text-white mb-4 sm:mb-6 tracking-tight leading-[1.1]">
                             Antrenmanlarını
                             <br />
-                            <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 text-transparent bg-clip-text animate-gradient">
+                            <span className="bg-gradient-to-r from-gray-700 via-gray-900 to-gray-700 dark:from-gray-300 dark:via-white dark:to-gray-300 text-transparent bg-clip-text">
                                 Akıllıca Yönet
                             </span>
                         </h1>
 
                         {/* Subtitle */}
                         <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-8 sm:mb-10 max-w-2xl mx-auto leading-relaxed px-4">
-                            Gelişimini takip et, programını planla, hedeflerine ulaş.
-                            <span className="hidden sm:inline"> Tüm cihazlarında senkronize, her zaman yanında.</span>
+                            Haftalık antrenman programını oluştur, setlerini kaydet, gelişimini takip et.
+                            <span className="hidden sm:inline"> Tüm cihazlarında senkronize çalış.</span>
                         </p>
 
                         {/* CTA Buttons */}
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4">
                             <button
                                 onClick={() => setShowAuth(true)}
-                                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl font-semibold hover:shadow-xl hover:shadow-indigo-500/30 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 group text-sm sm:text-base"
+                                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-semibold hover:bg-gray-800 dark:hover:bg-gray-100 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 group text-sm sm:text-base shadow-xl"
                             >
                                 <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
                                 Ücretsiz Başla
                                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
                             </button>
-                            <button className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-slate-700 rounded-2xl font-semibold hover:bg-gray-50 dark:hover:bg-slate-700 hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base">
-                                <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-500" />
-                                Nasıl Çalışır?
-                            </button>
+                            <a href="#features" className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-slate-600 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-slate-700 hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base">
+                                <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400" />
+                                Özellikler
+                            </a>
                         </div>
 
                         {/* Trust Indicators */}
@@ -108,27 +108,15 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* Stats Section */}
-            <section className="py-12 sm:py-16 border-y border-gray-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
-                <div className="container mx-auto px-4 sm:px-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
-                        <StatItem number="1000+" label="Aktif Kullanıcı" icon={<Users className="w-5 h-5" />} />
-                        <StatItem number="50K+" label="Kaydedilen Antrenman" icon={<Dumbbell className="w-5 h-5" />} />
-                        <StatItem number="500+" label="Egzersiz Çeşidi" icon={<Activity className="w-5 h-5" />} />
-                        <StatItem number="99.9%" label="Uptime" icon={<Zap className="w-5 h-5" />} />
-                    </div>
-                </div>
-            </section>
-
             {/* Features Grid */}
-            <section className="py-16 sm:py-24">
+            <section id="features" className="py-16 sm:py-24">
                 <div className="container mx-auto px-4 sm:px-6">
                     <div className="text-center mb-12 sm:mb-16">
                         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                            Neden <span className="text-indigo-600">Progressio</span>?
+                            Temel Özellikler
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-sm sm:text-base">
-                            Antrenmanlarını yönetmek hiç bu kadar kolay olmamıştı
+                            Antrenman takibi için ihtiyacın olan her şey tek bir yerde
                         </p>
                     </div>
 
@@ -136,45 +124,45 @@ export default function LandingPage() {
                         <FeatureCard
                             icon={<Calendar className="w-6 h-6" />}
                             color="indigo"
-                            title="Haftalık Planlama"
-                            desc="Sürükle bırak ile tüm haftanı saniyeler içinde planla"
+                            title="Haftalık Program"
+                            desc="7 günlük antrenman programını oluştur ve düzenle"
                         />
                         <FeatureCard
                             icon={<TrendingUp className="w-6 h-6" />}
                             color="purple"
-                            title="Gelişim Takibi"
-                            desc="Set, tekrar ve ağırlıklarını kaydet, grafiklerle gör"
+                            title="Set & Tekrar Takibi"
+                            desc="Her egzersiz için set, tekrar ve ağırlık kaydet"
                         />
                         <FeatureCard
                             icon={<Cloud className="w-6 h-6" />}
                             color="blue"
                             title="Bulut Senkronizasyon"
-                            desc="Telefondan PC'ye kesintisiz geçiş yap"
+                            desc="Verilerini güvenle sakla, tüm cihazlarından eriş"
                         />
                         <FeatureCard
                             icon={<Target className="w-6 h-6" />}
                             color="green"
-                            title="Hedef Belirleme"
-                            desc="Haftalık ve aylık hedeflerini belirle ve takip et"
+                            title="Vücut Ölçümleri"
+                            desc="Kilo, yağ oranı ve çevre ölçümlerini takip et"
                         />
                         <FeatureCard
                             icon={<Smartphone className="w-6 h-6" />}
                             color="orange"
-                            title="Mobil Uyumlu"
-                            desc="Her cihazda mükemmel çalışan arayüz"
+                            title="Responsive Tasarım"
+                            desc="Mobil ve masaüstünde sorunsuz kullanım"
                         />
                         <FeatureCard
                             icon={<BarChart className="w-6 h-6" />}
                             color="pink"
-                            title="Detaylı Analizler"
-                            desc="Kas grubu dağılımı ve hacim analizleri"
+                            title="Görsel Grafikler"
+                            desc="İlerlemenizi grafiklerle görselleştirin"
                         />
                     </div>
                 </div>
             </section>
 
             {/* App Preview Section */}
-            <section className="py-16 sm:py-24 bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900 relative overflow-hidden">
+            <section className="py-16 sm:py-24 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
 
                 <div className="container mx-auto px-4 sm:px-6 relative z-10">
@@ -187,7 +175,7 @@ export default function LandingPage() {
                             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">
                                 İnteraktif Vücut Haritası ile
                                 <br />
-                                <span className="text-indigo-300">Kaslarını Görselleştir</span>
+                                <span className="text-gray-300">Kaslarını Görselleştir</span>
                             </h2>
                             <p className="text-gray-300 text-sm sm:text-base leading-relaxed max-w-lg mx-auto lg:mx-0">
                                 Hangi kas grubunu ne kadar çalıştırdığını gör.
@@ -201,8 +189,8 @@ export default function LandingPage() {
                                     'Detaylı İstatistikler'
                                 ].map((item, i) => (
                                     <li key={i} className="flex items-center gap-3 text-sm sm:text-base">
-                                        <div className="w-6 h-6 rounded-full bg-indigo-500/30 flex items-center justify-center flex-shrink-0">
-                                            <ChevronRight className="w-4 h-4 text-indigo-300" />
+                                        <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                                            <ChevronRight className="w-4 h-4 text-gray-300" />
                                         </div>
                                         <span className="text-gray-200">{item}</span>
                                     </li>
@@ -215,7 +203,7 @@ export default function LandingPage() {
                             <div className="relative bg-white/10 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-white/20">
                                 <div className="aspect-[4/3] bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl sm:rounded-2xl flex items-center justify-center overflow-hidden">
                                     <div className="text-center p-4">
-                                        <BarChart className="w-16 h-16 sm:w-24 sm:h-24 text-indigo-400/60 mx-auto mb-4" />
+                                        <BarChart className="w-16 h-16 sm:w-24 sm:h-24 text-gray-400/60 mx-auto mb-4" />
                                         <p className="text-gray-400 text-xs sm:text-sm">Dashboard Önizleme</p>
                                     </div>
                                 </div>
@@ -228,19 +216,19 @@ export default function LandingPage() {
             {/* CTA Section */}
             <section className="py-16 sm:py-24">
                 <div className="container mx-auto px-4 sm:px-6">
-                    <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl sm:rounded-3xl p-8 sm:p-12 text-center text-white relative overflow-hidden">
+                    <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-2xl sm:rounded-3xl p-8 sm:p-12 text-center text-white relative overflow-hidden">
                         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxjaXJjbGUgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIuMSIgY3g9IjIwIiBjeT0iMjAiIHI9IjIiLz48L2c+PC9zdmc+')] opacity-30" />
 
                         <div className="relative z-10">
                             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
                                 Antrenmanlarını Bir Üst Seviyeye Taşı
                             </h2>
-                            <p className="text-indigo-100 mb-8 max-w-xl mx-auto text-sm sm:text-base">
+                            <p className="text-gray-300 mb-8 max-w-xl mx-auto text-sm sm:text-base">
                                 Binlerce kullanıcı gibi sen de Progressio ile hedeflerine ulaş
                             </p>
                             <button
                                 onClick={() => setShowAuth(true)}
-                                className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-indigo-600 rounded-2xl font-semibold hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 inline-flex items-center gap-2 text-sm sm:text-base"
+                                className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-gray-900 rounded-xl font-semibold hover:bg-gray-100 hover:-translate-y-0.5 transition-all duration-300 inline-flex items-center gap-2 text-sm sm:text-base shadow-lg"
                             >
                                 Hemen Başla
                                 <ArrowRight className="w-5 h-5" />
@@ -251,19 +239,19 @@ export default function LandingPage() {
             </section>
 
             {/* Footer */}
-            <footer className="py-12 sm:py-16 border-t border-gray-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
+            <footer className="py-12 sm:py-16 border-t border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50">
                 <div className="container mx-auto px-4 sm:px-6">
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">
+                            <div className="w-8 h-8 bg-gray-900 dark:bg-white/10 rounded-lg flex items-center justify-center text-white font-bold border border-gray-700 dark:border-white/20">
                                 P
                             </div>
                             <span className="font-semibold text-gray-700 dark:text-gray-300">Progressio</span>
                         </div>
                         <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-                            <a href="#" className="hover:text-indigo-600 transition">Gizlilik</a>
-                            <a href="#" className="hover:text-indigo-600 transition">Kullanım Şartları</a>
-                            <a href="#" className="hover:text-indigo-600 transition">İletişim</a>
+                            <a href="#" className="hover:text-gray-900 dark:hover:text-white transition">Gizlilik</a>
+                            <a href="#" className="hover:text-gray-900 dark:hover:text-white transition">Kullanım Şartları</a>
+                            <a href="#" className="hover:text-gray-900 dark:hover:text-white transition">İletişim</a>
                         </div>
                         <p className="text-gray-400 dark:text-gray-500 text-sm">
                             © 2025 Progressio
@@ -275,7 +263,10 @@ export default function LandingPage() {
             <AuthModal
                 isOpen={showAuth}
                 onClose={() => setShowAuth(false)}
-                onAuthSuccess={() => { }}
+                onAuthSuccess={() => {
+                    // Login başarılı - dashboard'a yönlendir
+                    window.location.href = '/dashboard';
+                }}
             />
 
             {/* Custom Styles */}
@@ -296,7 +287,7 @@ export default function LandingPage() {
 function StatItem({ number, label, icon }) {
     return (
         <div className="text-center">
-            <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 mb-3">
+            <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 mb-3">
                 {icon}
             </div>
             <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1">
@@ -311,12 +302,12 @@ function StatItem({ number, label, icon }) {
 
 function FeatureCard({ icon, color, title, desc }) {
     const colorClasses = {
-        indigo: 'from-indigo-500 to-indigo-600 shadow-indigo-500/20',
-        purple: 'from-purple-500 to-purple-600 shadow-purple-500/20',
-        blue: 'from-blue-500 to-blue-600 shadow-blue-500/20',
-        green: 'from-emerald-500 to-emerald-600 shadow-emerald-500/20',
-        orange: 'from-orange-500 to-orange-600 shadow-orange-500/20',
-        pink: 'from-pink-500 to-pink-600 shadow-pink-500/20',
+        indigo: 'from-gray-700 to-gray-800 shadow-gray-500/20',
+        purple: 'from-gray-600 to-gray-700 shadow-gray-500/20',
+        blue: 'from-gray-700 to-gray-800 shadow-gray-500/20',
+        green: 'from-gray-600 to-gray-700 shadow-gray-500/20',
+        orange: 'from-gray-700 to-gray-800 shadow-gray-500/20',
+        pink: 'from-gray-600 to-gray-700 shadow-gray-500/20',
     };
 
     return (

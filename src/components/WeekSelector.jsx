@@ -53,8 +53,8 @@ export default function WeekSelector({
                 onClick={handlePrev}
                 disabled={isFirst}
                 className={`p-2 rounded-xl border transition-all ${isFirst
-                    ? 'border-gray-100 dark:border-slate-800 text-gray-300 dark:text-slate-700 cursor-not-allowed'
-                    : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 shadow-sm'}`}
+                    ? 'border-gray-200 dark:border-slate-800 text-gray-300 dark:text-slate-700 cursor-not-allowed'
+                    : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-white shadow-sm'}`}
             >
                 <ChevronLeft size={20} />
             </button>
@@ -77,13 +77,13 @@ export default function WeekSelector({
                                 className={`
                                     relative px-4 py-2 rounded-xl font-medium text-sm transition-all duration-300 transform border flex flex-col items-center gap-0.5
                                     ${isActive
-                                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 scale-100 border-indigo-600'
-                                        : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700 border-gray-200 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-800 scale-95'
+                                        ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-lg scale-100 border-gray-900 dark:border-white'
+                                        : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700 border-gray-200 dark:border-slate-700 hover:border-gray-400 dark:hover:border-slate-500 scale-95'
                                     }
                                 `}
                             >
                                 <span className="font-bold">{week.label}</span>
-                                <span className={`text-[10px] ${isActive ? 'text-indigo-200' : 'text-gray-400 dark:text-slate-500'}`}>
+                                <span className={`text-[10px] ${isActive ? 'text-gray-300 dark:text-gray-600' : 'text-gray-400 dark:text-slate-500'}`}>
                                     {week.dateRange}
                                 </span>
                             </button>
@@ -119,8 +119,8 @@ export default function WeekSelector({
                 onClick={handleNext}
                 disabled={isLast}
                 className={`p-2 rounded-xl border transition-all ${isLast
-                    ? 'border-gray-100 dark:border-slate-800 text-gray-300 dark:text-slate-700 cursor-not-allowed'
-                    : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 shadow-sm'}`}
+                    ? 'border-gray-200 dark:border-slate-800 text-gray-300 dark:text-slate-700 cursor-not-allowed'
+                    : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-white shadow-sm'}`}
             >
                 <ChevronRight size={20} />
             </button>
@@ -129,7 +129,7 @@ export default function WeekSelector({
 
             <button
                 onClick={onAddWeek}
-                className="flex-shrink-0 bg-indigo-50 dark:bg-indigo-900/10 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-dashed border-indigo-200 dark:border-indigo-800 p-2.5 rounded-xl transition-all hover:scale-105 shadow-sm"
+                className="flex-shrink-0 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 border border-dashed border-gray-300 dark:border-slate-600 p-2.5 rounded-xl transition-all hover:scale-105 shadow-sm"
                 title="Yeni Hafta Ekle"
             >
                 <Plus size={20} strokeWidth={2.5} />
