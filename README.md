@@ -323,7 +323,7 @@ MIT License - Detaylar için [LICENSE](LICENSE) dosyasına bakın.
 
 ## 👤 Geliştirici
 
-**Cemil Dilir**
+**Cemil Dalar**
 
 - GitHub: [@cmldlr](https://github.com/cmldlr)
 
