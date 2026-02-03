@@ -43,7 +43,24 @@ export default function WeeklyGrid({
     focusMode = false, // Yeni prop: Akıllı Filtreleme
     onDeleteExercise // Yeni prop: Egzersiz Silme
 }) {
-    const { exercises, gridData, rowColors = {}, days = [] } = activeWeek;
+    const { exercises, gridData, rowColors = {}, days: allDays = [] } = activeWeek;
+
+    // Filter days for Focus Mode
+    const days = React.useMemo(() => {
+        if (!focusMode) return allDays;
+
+        // Get local date string for comparison (YYYY-MM-DD)
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+        const todayDay = allDays.find(d => {
+            if (!d.date) return false;
+            return d.date.split('T')[0] === todayStr;
+        });
+
+        // If today is in this week, show only today. Otherwise show all.
+        return todayDay ? [todayDay] : allDays;
+    }, [allDays, focusMode]);
 
     // UI State
     const [filterType, setFilterType] = useState('All');
@@ -62,6 +79,17 @@ export default function WeeklyGrid({
         const adjustedIndex = today === 0 ? 6 : today - 1;
         return Math.max(0, Math.min(adjustedIndex, 6));
     });
+
+    // Reset mobile view to 0 when entering focus mode (since days array will have only 1 item)
+    useEffect(() => {
+        if (focusMode) {
+            setMobileDayIndex(0);
+        } else {
+            // Restore to actual today index when exiting focus mode
+            const today = new Date().getDay();
+            setMobileDayIndex(today === 0 ? 6 : today - 1);
+        }
+    }, [focusMode]);
 
     const handlePrevDay = () => setMobileDayIndex(prev => Math.max(0, prev - 1));
     const handleNextDay = () => setMobileDayIndex(prev => Math.min(days.length - 1, prev + 1));
@@ -96,7 +124,7 @@ export default function WeeklyGrid({
         setContextMenu(null);
     };
 
-    const handleExerciseSave = ({ name, muscles, workoutType, targetReps, rowColor }) => {
+    const handleExerciseSave = ({ name, muscles, workoutTypes, targetReps, rowColor }) => {
         // Yeni Egzersiz Ekleme Modu
         if (editingExercise.index === -1) {
             if (name) {
@@ -109,7 +137,7 @@ export default function WeeklyGrid({
 
                 // Detayları güncelle
                 if (onUpdateExerciseDetails) {
-                    onUpdateExerciseDetails(newLength, { muscles, workoutType, targetReps });
+                    onUpdateExerciseDetails(newLength, { muscles, workoutTypes, targetReps });
                 }
 
                 // Rengi güncelle
@@ -126,7 +154,7 @@ export default function WeeklyGrid({
                 onUpdateExercises(activeWeek.id, newExercises);
             }
             if (onUpdateExerciseDetails) {
-                onUpdateExerciseDetails(editingExercise.index, { muscles, workoutType, targetReps });
+                onUpdateExerciseDetails(editingExercise.index, { muscles, workoutTypes, targetReps });
             }
             // Renk güncelleme
             if (rowColor && onUpdateRowColor) {
@@ -183,12 +211,35 @@ export default function WeeklyGrid({
     const visibleExercises = exercises.map((ex, i) => ({ name: ex, originalIndex: i }))
         .filter(({ originalIndex }) => {
             const details = exerciseDetails[originalIndex] || {};
-            const exerciseWorkoutType = details.workoutType || '';
+            const rawWorkoutTypes = details.workoutTypes || details.workoutType;
+            const exerciseWorkoutTypes = Array.isArray(rawWorkoutTypes)
+                ? rawWorkoutTypes
+                : (rawWorkoutTypes ? [rawWorkoutTypes] : []);
+
             const exerciseMuscles = details.muscles || [];
 
-            // Antrenman tipi filtresi
-            if (filterType !== 'All' && exerciseWorkoutType !== filterType) {
-                return false;
+            // Antrenman tipi filtresi (Dropdown)
+            if (filterType !== 'All') {
+                if (exerciseWorkoutTypes.length === 0) return false;
+                if (!exerciseWorkoutTypes.includes(filterType)) return false;
+            }
+
+            // Focus Mode Otomatik Filtreleme: Günün antrenman tipine uymayanları gizle
+            if (focusMode && days.length === 1) {
+                const day = days[0];
+                if (day.type && day.type !== 'Mix' && day.type !== 'Off') {
+                    // Egzersiz "Mix" veya "Full Body" ise göster
+                    if (exerciseWorkoutTypes.includes('Mix') || exerciseWorkoutTypes.includes('Full Body')) {
+                        // keep it
+                    } else if (exerciseWorkoutTypes.length === 0) {
+                        // keep it (universal)
+                    } else {
+                        // Strict check: Egzersizin tiplerinden biri günün tipiyle eşleşmeli
+                        const dayTypeLower = day.type.toLowerCase();
+                        const hasMatch = exerciseWorkoutTypes.some(t => t.toLowerCase() === dayTypeLower);
+                        if (!hasMatch) return false;
+                    }
+                }
             }
 
             // Kas grubu filtresi
@@ -257,19 +308,21 @@ export default function WeeklyGrid({
             </div>
 
             {/* Desktop View (Hidden on Mobile/Tablet) */}
-            <div className="hidden lg:block overflow-x-auto shadow-xl rounded-xl border border-gray-200 dark:border-slate-800 transition-colors">
+            <div className={`hidden lg:block overflow-x-auto shadow-xl rounded-xl border border-gray-200 dark:border-slate-800 transition-colors ${focusMode ? 'max-w-4xl mx-auto' : ''}`}>
                 <table className="min-w-full border-collapse bg-white dark:bg-slate-950">
                     <thead>
                         <tr>
-                            <th className="p-3 border-b border-r border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 text-left min-w-[220px] sticky left-0 z-10 shadow-sm relative group">
+                            <th className={`p-3 border-b border-r border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 text-left sticky left-0 z-10 shadow-sm relative group ${focusMode ? 'w-1/3 min-w-[250px]' : 'min-w-[220px]'}`}>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-gray-700 dark:text-gray-300 font-bold">Egzersizler</span>
-                                    <button
-                                        onClick={openNewExerciseModal}
-                                        className="text-xs bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900 px-3 py-1.5 rounded-md shadow-sm transition-all flex items-center gap-1"
-                                    >
-                                        <span>+</span> EKLE
-                                    </button>
+                                    <span className="text-gray-700 dark:text-gray-300 font-bold text-lg pl-2">Egzersizler</span>
+                                    {!focusMode && (
+                                        <button
+                                            onClick={openNewExerciseModal}
+                                            className="text-xs bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900 px-3 py-1.5 rounded-md shadow-sm transition-all flex items-center gap-1"
+                                        >
+                                            <span>+</span> EKLE
+                                        </button>
+                                    )}
                                 </div>
                             </th>
                             {days.map((day, index) => {
@@ -277,14 +330,21 @@ export default function WeeklyGrid({
                                 return (
                                     <th
                                         key={day.id || index}
-                                        className={`p-3 border-b border-r min-w-[120px] text-center cursor-pointer hover:brightness-105 dark:hover:brightness-110 transition resize-x overflow-hidden ${className}`}
-                                        style={{ ...style, resize: 'horizontal', overflow: 'hidden', minWidth: '120px', maxWidth: '300px' }}
+                                        className={`p-3 border-b border-r text-center cursor-pointer hover:brightness-105 dark:hover:brightness-110 transition resize-x overflow-hidden ${className} ${focusMode ? 'w-2/3' : 'min-w-[120px]'}`}
+                                        style={{ ...style, resize: focusMode ? 'none' : 'horizontal', overflow: 'hidden', maxWidth: focusMode ? 'none' : '300px' }}
                                         onClick={() => openDayEditor(day, index)}
                                         title="Türü ve rengi değiştirmek için tıklayın"
                                     >
-                                        <div className="font-bold text-sm">{day.label}</div>
+                                        <div className="font-bold text-base flex flex-col items-center justify-center gap-1">
+                                            <span className="uppercase tracking-wide">{day.label}</span>
+                                            {day.type && (
+                                                <span className="text-xs font-normal opacity-90 px-2 py-0.5 rounded-full bg-black/10 dark:bg-white/10 whitespace-nowrap">
+                                                    {day.type}
+                                                </span>
+                                            )}
+                                        </div>
                                         {day.displayDate && (
-                                            <div className="text-[10px] bg-black/5 dark:bg-black/20 rounded-full px-2 py-0.5 mt-1 inline-block font-medium opacity-80">
+                                            <div className="text-[10px] bg-black/5 dark:bg-black/20 rounded-full px-2 py-0.5 mt-1.5 inline-block font-medium opacity-80">
                                                 {day.displayDate}
                                             </div>
                                         )}
@@ -300,7 +360,11 @@ export default function WeeklyGrid({
 
                             const details = exerciseDetails[rowIndex] || {};
                             const exerciseMuscles = details.muscles || [];
-                            const exerciseWorkoutType = details.workoutType || '';
+                            // Handle both array (new) and string (old) formats
+                            const rawWorkoutTypes = details.workoutTypes || details.workoutType;
+                            const exerciseWorkoutTypes = Array.isArray(rawWorkoutTypes)
+                                ? rawWorkoutTypes
+                                : (rawWorkoutTypes ? [rawWorkoutTypes] : []);
                             const targetReps = details.targetReps || '';
 
                             return (
@@ -324,13 +388,13 @@ export default function WeeklyGrid({
                                                 <span className="opacity-0 group-hover:opacity-100 text-xs text-gray-400">✎</span>
                                             </div>
 
-                                            {(exerciseWorkoutType || exerciseMuscles.length > 0) && (
+                                            {(exerciseWorkoutTypes.length > 0 || exerciseMuscles.length > 0) && (
                                                 <div className='flex flex-wrap gap-1'>
-                                                    {exerciseWorkoutType && (
-                                                        <span className="text-[10px] bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded w-fit font-medium border border-indigo-100 dark:border-indigo-800/50">
-                                                            {exerciseWorkoutType}
+                                                    {exerciseWorkoutTypes.map(type => (
+                                                        <span key={type} className="text-[10px] bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded w-fit font-medium border border-indigo-100 dark:border-indigo-800/50">
+                                                            {type}
                                                         </span>
-                                                    )}
+                                                    ))}
 
                                                     {exerciseMuscles.slice(0, 3).map(muscleId => (
                                                         <span key={muscleId} className="text-[10px] bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 px-1.5 py-0.5 rounded border border-gray-200 dark:border-slate-700">
@@ -347,13 +411,20 @@ export default function WeeklyGrid({
 
                                     {days.map((day, index) => {
                                         const cellKey = `${rowIndex}-${day.id || index}`;
-                                        const isMismatch = exerciseWorkoutType &&
-                                            day.type &&
-                                            day.type !== 'Off' &&
-                                            day.type !== 'Mix' &&
-                                            exerciseWorkoutType !== 'Mix' &&
-                                            exerciseWorkoutType !== 'Full Body' &&
-                                            exerciseWorkoutType.toLowerCase() !== day.type.toLowerCase();
+
+
+                                        // Validation: Can we enter data here?
+                                        // If day has a type (e.g., "Push"), check if exercise matches that type
+                                        const isMismatch = (() => {
+                                            if (!day.type) return false;
+                                            if (day.type === 'Off' || day.type === 'Mix') return false;
+                                            if (exerciseWorkoutTypes.length === 0) return false; // No types logic defined = allow all
+                                            if (exerciseWorkoutTypes.includes('Mix') || exerciseWorkoutTypes.includes('Full Body')) return false;
+
+                                            // Check if ANY of the exercise types match the day type (case-insensitive)
+                                            const dayTypeLower = day.type.toLowerCase();
+                                            return !exerciseWorkoutTypes.some(t => t.toLowerCase() === dayTypeLower);
+                                        })();
 
                                         // Dynamic Styles
                                         const colorId = getColorIdFromClass(day.color);
@@ -396,7 +467,8 @@ export default function WeeklyGrid({
 
                         <div className="flex flex-col items-center flex-1">
                             {(() => {
-                                const { className, style } = getHeaderStyles(getColorIdFromClass(days[mobileDayIndex]?.color));
+                                const day = days[mobileDayIndex] || days[0] || {};
+                                const { className, style } = getHeaderStyles(getColorIdFromClass(day.color));
                                 return (
                                     <div
                                         className={`flex flex-col items-center max-w-[200px] py-1.5 px-4 rounded-xl transition-colors cursor-pointer ${className}`}
@@ -407,12 +479,17 @@ export default function WeeklyGrid({
                                             Gün {mobileDayIndex + 1} / 7
                                         </span>
                                         <span className="font-bold text-lg block truncate px-2">
-                                            {days[mobileDayIndex]?.label}
+                                            {day.label}
                                         </span>
+                                        {day.type && (
+                                            <span className="text-xs font-medium opacity-90 px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 mt-0.5 whitespace-nowrap">
+                                                {day.type}
+                                            </span>
+                                        )}
                                         {
-                                            days[mobileDayIndex]?.displayDate && (
+                                            day.displayDate && (
                                                 <span className="text-xs opacity-80 font-medium mt-0.5">
-                                                    {days[mobileDayIndex]?.displayDate}
+                                                    {day.displayDate}
                                                 </span>
                                             )
                                         }
@@ -448,18 +525,25 @@ export default function WeeklyGrid({
 
                         // Smart Filtering Logic for Mobile
                         const details = exerciseDetails[rowIndex] || {};
-                        const exerciseWorkoutType = details.workoutType || '';
-                        const day = days[mobileDayIndex];
+                        const rawWorkoutTypes = details.workoutTypes || details.workoutType;
+                        const exerciseWorkoutTypes = Array.isArray(rawWorkoutTypes)
+                            ? rawWorkoutTypes
+                            : (rawWorkoutTypes ? [rawWorkoutTypes] : []);
+
+                        const day = days[mobileDayIndex] || days[0];
+                        if (!day) return true; // Safety fallback
 
                         // Scenario 1: Day is "Mix" or "Off" -> Show Everything
                         if (day.type === 'Mix') return true;
                         if (!day.type) return true;
 
                         // Scenario 2: Exercise is Universal ("Mix" or "Full Body") -> Show it on any day
-                        if (exerciseWorkoutType === 'Mix' || exerciseWorkoutType === 'Full Body' || !exerciseWorkoutType) return true;
+                        if (exerciseWorkoutTypes.includes('Mix') || exerciseWorkoutTypes.includes('Full Body')) return true;
+                        if (exerciseWorkoutTypes.length === 0) return true; // No type = universal
 
                         // Scenario 3: Strict Match
-                        return exerciseWorkoutType.toLowerCase() === day.type.toLowerCase();
+                        const dayTypeLower = day.type.toLowerCase();
+                        return exerciseWorkoutTypes.some(t => t.toLowerCase() === dayTypeLower);
                     }).map(({ name: exercise, originalIndex: rowIndex }) => {
                         // ... existing render logic ...
                         const rowBgColor = rowColors[rowIndex] || '';
@@ -467,10 +551,16 @@ export default function WeeklyGrid({
 
                         const details = exerciseDetails[rowIndex] || {};
                         const exerciseMuscles = details.muscles || [];
-                        const exerciseWorkoutType = details.workoutType || '';
+                        // Unified extraction
+                        const rawWorkoutTypes = details.workoutTypes || details.workoutType;
+                        const exerciseWorkoutTypes = Array.isArray(rawWorkoutTypes)
+                            ? rawWorkoutTypes
+                            : (rawWorkoutTypes ? [rawWorkoutTypes] : []);
                         const targetReps = details.targetReps || '';
 
-                        const day = days[mobileDayIndex];
+                        const day = days[mobileDayIndex] || days[0];
+                        if (!day) return null;
+
                         const cellKey = `${rowIndex}-${day.id || mobileDayIndex}`;
 
                         return (
@@ -487,10 +577,12 @@ export default function WeeklyGrid({
                                         </div>
                                         <div>
                                             <div className="font-bold text-sm text-gray-900 dark:text-white">{exercise}</div>
-                                            {(targetReps || exerciseWorkoutType) && (
-                                                <div className="flex gap-1 mt-0.5">
+                                            {(targetReps || exerciseWorkoutTypes.length > 0) && (
+                                                <div className="flex flex-wrap gap-1 mt-0.5">
                                                     {targetReps && <span className="text-[10px] opacity-80 bg-black/5 dark:bg-black/20 px-1 rounded text-gray-700 dark:text-gray-300">{targetReps}</span>}
-                                                    {exerciseWorkoutType && <span className="text-[10px] opacity-80 bg-black/5 dark:bg-black/20 px-1 rounded text-gray-700 dark:text-gray-300">{exerciseWorkoutType}</span>}
+                                                    {exerciseWorkoutTypes.map(type => (
+                                                        <span key={type} className="text-[10px] opacity-80 bg-black/5 dark:bg-black/20 px-1 rounded text-gray-700 dark:text-gray-300">{type}</span>
+                                                    ))}
                                                 </div>
                                             )}
                                         </div>
@@ -525,11 +617,20 @@ export default function WeeklyGrid({
                         <p className="text-xs text-gray-400 dark:text-slate-600">
                             {visibleExercises.length - visibleExercises.filter(({ name: exercise, originalIndex: rowIndex }) => {
                                 const details = exerciseDetails[rowIndex] || {};
-                                const exerciseWorkoutType = details.workoutType || '';
-                                const day = days[mobileDayIndex];
-                                if (!day.type || day.type === 'Off' || day.type === 'Mix') return true;
-                                if (exerciseWorkoutType === 'Mix' || exerciseWorkoutType === 'Full Body' || !exerciseWorkoutType) return true;
-                                return exerciseWorkoutType.toLowerCase() === day.type.toLowerCase();
+                                const rawWorkoutTypes = details.workoutTypes || details.workoutType;
+                                const exerciseWorkoutTypes = Array.isArray(rawWorkoutTypes)
+                                    ? rawWorkoutTypes
+                                    : (rawWorkoutTypes ? [rawWorkoutTypes] : []);
+                                const day = days[mobileDayIndex] || days[0];
+                                if (!day) return false;
+
+                                // Re-use simplified logic for count
+                                if (showAllExercises) return true;
+                                if (day.type === 'Mix' || !day.type) return true;
+                                if (exerciseWorkoutTypes.includes('Mix') || exerciseWorkoutTypes.includes('Full Body') || exerciseWorkoutTypes.length === 0) return true;
+
+                                const dayTypeLower = day.type.toLowerCase();
+                                return exerciseWorkoutTypes.some(t => t.toLowerCase() === dayTypeLower);
                             }).length} egzersiz bu günün antrenman tipiyle eşleşmediği için gizlendi.
                         </p>
                     </div>

@@ -25,7 +25,7 @@ export default function ExerciseEditor({
 }) {
     const [name, setName] = useState(exerciseName || '');
     const [selectedMuscles, setSelectedMuscles] = useState([]);
-    const [selectedWorkoutType, setSelectedWorkoutType] = useState('');
+    const [selectedWorkoutTypes, setSelectedWorkoutTypes] = useState([]); // Changed to array
     const [targetReps, setTargetReps] = useState('');
     const [selectedColor, setSelectedColor] = useState(extractColorId(rowColor) || '#3b82f6'); // Default blue hex if empty
     const [selectionMode, setSelectionMode] = useState('buttons');
@@ -114,7 +114,10 @@ export default function ExerciseEditor({
         if (isOpen) {
             setName(exerciseName || '');
             setSelectedMuscles(exerciseDetails?.muscles || []);
-            setSelectedWorkoutType(exerciseDetails?.workoutType || '');
+            // Backward compatibility: string -> array
+            const existingTypes = exerciseDetails?.workoutTypes ||
+                (exerciseDetails?.workoutType ? [exerciseDetails.workoutType] : []);
+            setSelectedWorkoutTypes(existingTypes);
             setTargetReps(exerciseDetails?.targetReps || '');
             setSelectedColor(extractColorId(rowColor) || '#3b82f6');
             setSelectionMode('buttons');
@@ -140,11 +143,13 @@ export default function ExerciseEditor({
         // Otomatik Doldurma Mantığı
         const defaults = EXERCISE_DEFAULTS[selectedName];
         if (defaults) {
-            // Eğer kullanıcı henüz manuel seçim yapmadıysa veya boşsa doldur
-            if (defaults.workoutType) setSelectedWorkoutType(defaults.workoutType);
+            // workoutTypes array veya workoutType string olabilir
+            if (defaults.workoutTypes) {
+                setSelectedWorkoutTypes(defaults.workoutTypes);
+            } else if (defaults.workoutType) {
+                setSelectedWorkoutTypes([defaults.workoutType]);
+            }
             if (defaults.muscles) {
-                // Mevcut seçili kaslar varsa üzerine ekle veya direkt set et
-                // Genelde direkt set etmek daha mantıklı (resetleyip)
                 setSelectedMuscles(defaults.muscles);
             }
         }
@@ -182,11 +187,20 @@ export default function ExerciseEditor({
         onSave({
             name: name.trim(),
             muscles: selectedMuscles,
-            workoutType: selectedWorkoutType,
+            workoutTypes: selectedWorkoutTypes, // Array olarak kaydet
             targetReps: targetReps.trim(),
             rowColor: selectedColor
         });
         onClose();
+    };
+
+    // Toggle workout type selection
+    const toggleWorkoutType = (type) => {
+        setSelectedWorkoutTypes(prev =>
+            prev.includes(type)
+                ? prev.filter(t => t !== type)
+                : [...prev, type]
+        );
     };
 
 
@@ -310,23 +324,25 @@ export default function ExerciseEditor({
                             />
                         </div>
 
-                        {/* Workout Type */}
-                        <div className="col-span-2 sm:col-span-1">
+                        {/* Workout Types - Multi Select */}
+                        <div className="col-span-2">
                             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Antrenman Tipi
+                                Antrenman Tipleri
                             </label>
-                            <div className="relative">
-                                <select
-                                    value={selectedWorkoutType}
-                                    onChange={(e) => setSelectedWorkoutType(e.target.value)}
-                                    className="w-full appearance-none px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-gray-400 dark:focus:ring-white outline-none text-gray-900 dark:text-white transition-all font-medium pr-10"
-                                >
-                                    <option value="">Seçiniz...</option>
-                                    {(workoutTypes || []).map(type => (
-                                        <option key={type} value={type}>{type}</option>
-                                    ))}
-                                </select>
-                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                            <div className="flex flex-wrap gap-2">
+                                {(workoutTypes || []).map(type => (
+                                    <button
+                                        key={type}
+                                        type="button"
+                                        onClick={() => toggleWorkoutType(type)}
+                                        className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all border ${selectedWorkoutTypes.includes(type)
+                                            ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white shadow-md'
+                                            : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-slate-700 hover:border-gray-400'
+                                            }`}
+                                    >
+                                        {type}
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     </div>
