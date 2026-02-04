@@ -302,12 +302,12 @@ function StatItem({ number, label, icon }) {
 
 function FeatureCard({ icon, color, title, desc }) {
     const colorClasses = {
-        indigo: 'from-gray-700 to-gray-800 shadow-gray-500/20',
-        purple: 'from-gray-600 to-gray-700 shadow-gray-500/20',
-        blue: 'from-gray-700 to-gray-800 shadow-gray-500/20',
-        green: 'from-gray-600 to-gray-700 shadow-gray-500/20',
-        orange: 'from-gray-700 to-gray-800 shadow-gray-500/20',
-        pink: 'from-gray-600 to-gray-700 shadow-gray-500/20',
+        indigo: 'from-indigo-500 to-indigo-600 shadow-indigo-500/40',
+        purple: 'from-purple-500 to-purple-600 shadow-purple-500/40',
+        blue: 'from-blue-500 to-blue-600 shadow-blue-500/40',
+        green: 'from-emerald-500 to-emerald-600 shadow-emerald-500/40',
+        orange: 'from-orange-500 to-orange-600 shadow-orange-500/40',
+        pink: 'from-pink-500 to-pink-600 shadow-pink-500/40',
     };
 
     return (
