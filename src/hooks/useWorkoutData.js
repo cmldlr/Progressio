@@ -114,6 +114,7 @@ export function useWorkoutData() {
             startDate: weekStart.toISOString(),
             label: `${weekNum}. Hafta`,
             exercises: [],
+            exerciseIds: [], // UI-only stable IDs
             gridData: {},
             days
         };
@@ -134,12 +135,17 @@ export function useWorkoutData() {
             label: dbDaysConfig[i]?.label || calcDay.label
         }));
 
+        const exercises = dbData.exercises || [];
+        // Generate ephemeral IDs for existing exercises
+        const exerciseIds = exercises.map(() => crypto.randomUUID());
+
         return {
             id: dbData.id,
             weekNumber: weekNum,
             startDate: weekStart.toISOString(),
             label: `${weekNum}. Hafta`,
-            exercises: dbData.exercises || [],
+            exercises: exercises,
+            exerciseIds: exerciseIds, // UI-only stable IDs
             gridData: dbData.grid_data || {},
             days
         };
@@ -440,7 +446,19 @@ export function useWorkoutData() {
         },
 
         updateExercises: (weekId, newExercises) => {
-            updateActiveWeek(prev => ({ ...prev, exercises: newExercises }));
+            updateActiveWeek(prev => {
+                let newIds = [...(prev.exerciseIds || [])];
+                // If exercises added (length grew), generate new IDs
+                while (newIds.length < newExercises.length) {
+                    newIds.push(crypto.randomUUID());
+                }
+                // If exercises removed (length shrank), slice match (assumes truncate from end, but WeeklyGrid typically handles Delete separately)
+                // Note: Rename actions maintain length, Add appends.
+                if (newIds.length > newExercises.length) {
+                    newIds = newIds.slice(0, newExercises.length);
+                }
+                return { ...prev, exercises: newExercises, exerciseIds: newIds };
+            });
         },
 
         updateDay: (weekId, dayIndex, updates) => {
@@ -525,9 +543,86 @@ export function useWorkoutData() {
             updateActiveWeek(prev => {
                 const newExercises = [...prev.exercises];
                 newExercises.splice(index, 1);
+
+                // Remove ID as well
+                const newIds = [...(prev.exerciseIds || [])];
+                newIds.splice(index, 1);
+
                 // Grid data clean up implies more logic, skipping for brevity but safe to keep orphan data
-                return { ...prev, exercises: newExercises };
+                return { ...prev, exercises: newExercises, exerciseIds: newIds };
             });
+        },
+        reorderExercises: async (weekId, oldIndex, newIndex) => {
+            if (oldIndex === newIndex) return;
+            if (!activeWeek) return;
+
+            // 1. Prepare Data Stucture for Reordering
+            // We'll create a "row" object for each exercise that bundles its name, global details, and grid data
+            const currentExercises = activeWeek.exercises || [];
+            const ids = activeWeek.exerciseIds || currentExercises.map(() => crypto.randomUUID());
+
+            const rows = currentExercises.map((name, index) => ({
+                name,
+                id: ids[index],
+                details: settings.exerciseDetails[index] || {},
+                gridData: {} // keys wil be just the day suffix
+            }));
+
+            // Collect Grid Data into rows
+            Object.entries(activeWeek.gridData || {}).forEach(([key, value]) => {
+                const firstHyphen = key.indexOf('-');
+                if (firstHyphen === -1) return;
+
+                const rowIndexStr = key.substring(0, firstHyphen);
+                const rowIndex = parseInt(rowIndexStr);
+                const daySuffix = key.substring(firstHyphen + 1);
+
+                if (!isNaN(rowIndex) && rows[rowIndex]) {
+                    rows[rowIndex].gridData[daySuffix] = value;
+                }
+            });
+
+            // 2. Perform the Move
+            const [movedRow] = rows.splice(oldIndex, 1);
+            rows.splice(newIndex, 0, movedRow);
+
+            // 3. Reconstruct Data Structures
+            const newExercises = rows.map(r => r.name);
+            const newIds = rows.map(r => r.id);
+
+            const newExerciseDetails = { ...settings.exerciseDetails };
+            // Clear old numeric keys in range of reordering... actually safer to rebuild strictly from our new 'rows' list
+            // However, we must preserve details for indices >= rows.length if any exist (orphans), though likely we want to sync them.
+            // Let's rewrite the details for the affected indices 0..rows.length-1
+            rows.forEach((row, index) => {
+                newExerciseDetails[index] = row.details;
+            });
+
+            const newGridData = {};
+            // Re-flatten grid data, preserving data for rows we didn't touch if necessary? 
+            // Actually, for the active week, we should rebuild 'gridData' from our comprehensive 'rows' list.
+            // Any grid data belonging to indices larger than current exercises count is technically orphan/junk, safe to drop or keep.
+            // To be safe and clean, we rebuild 'gridData' only for the valid exercises.
+            rows.forEach((row, index) => {
+                Object.entries(row.gridData).forEach(([daySuffix, value]) => {
+                    newGridData[`${index}-${daySuffix}`] = value;
+                });
+            });
+
+            // 4. Apply Updates
+            // Update Local & DB for Active Week (Exercises + GridData)
+            updateActiveWeek(prev => ({
+                ...prev,
+                exercises: newExercises,
+                exerciseIds: newIds,
+                gridData: newGridData
+            }));
+
+            // Update Global Settings (ExerciseDetails)
+            setSettings(prev => ({ ...prev, exerciseDetails: newExerciseDetails }));
+            if (user) {
+                await workoutDB.upsertSettings(user.id, { ...settings, exerciseDetails: newExerciseDetails });
+            }
         }
     };
 

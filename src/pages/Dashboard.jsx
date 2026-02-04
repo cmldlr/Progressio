@@ -322,6 +322,7 @@ export default function Dashboard() {
                             workoutColors={data.workoutColors}
                             focusMode={focusMode}
                             onDeleteExercise={actions.deleteExercise}
+                            onReorderExercises={actions.reorderExercises}
                         />
                     </>
                 )}

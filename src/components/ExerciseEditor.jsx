@@ -220,7 +220,7 @@ export default function ExerciseEditor({
             <div className="relative w-full h-[95dvh] sm:h-auto sm:max-h-[85vh] sm:max-w-2xl bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col transition-transform duration-300 ease-out transform translate-y-0">
 
                 {/* Header */}
-                <div className="flex-none px-6 py-4 border-b border-gray-700 dark:border-slate-700 flex items-center justify-between bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-slate-800 dark:via-slate-900 dark:to-slate-900 z-20 relative rounded-t-3xl sm:rounded-t-xl">
+                <div className="flex-none px-6 py-4 border-b border-gray-700 dark:border-slate-700 flex items-center justify-between bg-gray-900 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-slate-800 dark:via-slate-900 dark:to-slate-900 z-20 relative rounded-t-3xl sm:rounded-t-xl">
                     {/* Mobile Handle */}
                     <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-gray-600 rounded-full sm:hidden" />
 
