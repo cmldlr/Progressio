@@ -1,0 +1,163 @@
+﻿
+> temp_app@0.0.0 lint
+> eslint .
+
+
+C:\Users\cemil\Desktop\y├╝ksek lisans\Progressio\src\components\BodyDiagram.jsx
+  56:11  error  'getMuscleStyle' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\cemil\Desktop\y├╝ksek lisans\Progressio\src\components\CalendarView.jsx
+   88:11  warning  The 'startDate' conditional could make the dependencies of useMemo Hook (at line 113) change on every render. To fix this, wrap the initialization of 'startDate' in its own useMemo() Hook  react-hooks/exhaustive-deps
+   91:25  error    'monthEnd' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                     no-unused-vars
+  169:8   warning  React Hook useEffect has a missing dependency: 'weeksCache'. Either include it or remove the dependency array                                                                                react-hooks/exhaustive-deps
+
+C:\Users\cemil\Desktop\y├╝ksek lisans\Progressio\src\components\CustomColorPicker.jsx
+   1:27  error  'useEffect' is defined but never used. Allowed unused vars must match /^[A-Z_]/u           no-unused-vars
+   1:38  error  'useRef' is defined but never used. Allowed unused vars must match /^[A-Z_]/u              no-unused-vars
+  11:12  error  'isOpen' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u     no-unused-vars
+  11:20  error  'setIsOpen' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\cemil\Desktop\y├╝ksek lisans\Progressio\src\components\ExerciseEditor.jsx
+    7:5   error  'getPreviewStyles' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           no-unused-vars
+   18:5   error  'exerciseIndex' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         no-unused-vars
+  115:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  113 |     useEffect(() => {
+  114 |         if (isOpen) {
+> 115 |             setName(exerciseName || '');
+      |             ^^^^^^^ Avoid calling setState() directly within an effect
+  116 |             setSelectedMuscles(exerciseDetails?.muscles || []);
+  117 |             // Backward compatibility: string -> array
+  118 |             const existingTypes = exerciseDetails?.workoutTypes ||  react-hooks/set-state-in-effect
+  136:11  error  'isCustomColor' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     no-unused-vars
+  161:11  error  'getButtonStyle' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    no-unused-vars
+
+C:\Users\cemil\Desktop\y├╝ksek lisans\Progressio\src\components\MeasurementsModal.jsx
+  57:8  warning  React Hook React.useEffect has a missing dependency: 'defaultState'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\cemil\Desktop\y├╝ksek lisans\Progressio\src\components\ProgressCharts.jsx
+  112:19  error  '_' is defined but never used  no-unused-vars
+
+C:\Users\cemil\Desktop\y├╝ksek lisans\Progressio\src\components\SettingsPanel.jsx
+  7:5  error  'getPreviewClasses' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  8:5  error  'extractColorId' is defined but never used. Allowed unused vars must match /^[A-Z_]/u     no-unused-vars
+
+C:\Users\cemil\Desktop\y├╝ksek lisans\Progressio\src\components\WeeklyGrid.jsx
+   15:5   error  'defaultDropAnimationSideEffects' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  no-unused-vars
+   19:5   error  'arrayMove' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        no-unused-vars
+  196:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  194 |     useEffect(() => {
+  195 |         if (focusMode) {
+> 196 |             setMobileDayIndex(0);
+      |             ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  197 |         } else {
+  198 |             // Restore to actual today index when exiting focus mode
+  199 |             const today = new Date().getDay();                                       react-hooks/set-state-in-effect
+  222:17  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  220 |
+  221 |             if (todayConfig && todayConfig.type && todayConfig.type !== 'Off') {
+> 222 |                 setFilterType(todayConfig.type);
+      |                 ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  223 |             } else {
+  224 |                 setFilterType('All'); // E─şer Off ise veya bulunamazsa hepsini g├Âster
+  225 |             }  react-hooks/set-state-in-effect
+  684:63  error  'exercise' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    no-unused-vars
+  715:39  error  'exerciseMuscles' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         no-unused-vars
+  802:93  error  'exercise' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    no-unused-vars
+
+C:\Users\cemil\Desktop\y├╝ksek lisans\Progressio\src\components\WheelColorPicker.jsx
+   2:10  error    'extractColorId' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              no-unused-vars
+  70:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  68 |     useEffect(() => {
+  69 |         if (!isDraggingWheel && !isDraggingSlider) {
+> 70 |             setHsv(hexToHsv(color || '#EF4444'));
+     |             ^^^^^^ Avoid calling setState() directly within an effect
+  71 |         }
+  72 |     }, [color]);
+  73 |  react-hooks/set-state-in-effect
+  72:8   warning  React Hook useEffect has missing dependencies: 'isDraggingSlider' and 'isDraggingWheel'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+
+C:\Users\cemil\Desktop\y├╝ksek lisans\Progressio\src\hooks\useMeasurements.js
+  2:10  error  'supabase' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\cemil\Desktop\y├╝ksek lisans\Progressio\src\hooks\useWorkoutData.js
+  246:8  warning  React Hook useEffect has missing dependencies: 'createEmptyWeek' and 'hydrateWeekFromDB'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\cemil\Desktop\y├╝ksek lisans\Progressio\src\pages\Dashboard.jsx
+   14:90  error  'measurementsLoading' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 no-unused-vars
+  126:22  error  'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     no-unused-vars
+  176:30  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  174 |                         {/* Sync Indicator - Visible on Mobile now */}
+  175 |                         <div className="flex md:block">
+> 176 |                             <SyncIndicator />
+      |                              ^^^^^^^^^^^^^ This component is created during render
+  177 |                         </div>
+  178 |                     </div>
+  179 |
+
+  130 |     };
+  131 |
+> 132 |     const SyncIndicator = () => {
+      |                           ^^^^^^^
+> 133 |         const statusConfig = {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 134 |             idle: { icon: 'check-circle', color: 'text-gray-400', label: 'Haz─▒r' },
+      ÔÇĞ
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 155 |         );
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 156 |     };
+      | ^^^^^^ The component is created during render here
+  157 |
+  158 |     if (loading) return null; // Or a skeleton loader
+  159 |  react-hooks/static-components
+
+C:\Users\cemil\Desktop\y├╝ksek lisans\Progressio\src\pages\LandingPage.jsx
+  14:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  12 |
+  13 |     useEffect(() => {
+> 14 |         setIsVisible(true);
+     |         ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  15 |     }, []);
+  16 |
+  17 |     return (  react-hooks/set-state-in-effect
+
+Ô£û 33 problems (28 errors, 5 warnings)
+

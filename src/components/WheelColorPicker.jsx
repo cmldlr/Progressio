@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { extractColorId, THEME_COLORS } from '../utils/themeColors';
 
 // Helper: Hex to HSV
 const hexToHsv = (hex) => {
@@ -58,18 +57,27 @@ const hsvToHex = ({ h, s, v }) => {
 
 export default function WheelColorPicker({ color, onChange, swatches = true }) {
     // Current HSV state
-    const [hsv, setHsv] = useState(hexToHsv(color || '#EF4444'));
+    const [hsv, setHsv] = useState(() => hexToHsv(color || '#EF4444'));
     const [isDraggingWheel, setIsDraggingWheel] = useState(false);
     const [isDraggingSlider, setIsDraggingSlider] = useState(false);
     const wheelRef = useRef(null);
     const sliderRef = useRef(null);
+    const hsvRef = useRef(hsv); // Store latest hsv for stable callbacks
+
+    useEffect(() => {
+        hsvRef.current = hsv;
+    }, [hsv]);
 
     // Sync state if prop changes remotely (and not dragging)
     useEffect(() => {
         if (!isDraggingWheel && !isDraggingSlider) {
-            setHsv(hexToHsv(color || '#EF4444'));
+            const newHsv = hexToHsv(color || '#EF4444');
+            // Avoid loop if effectively equal
+            if (newHsv.h !== hsvRef.current.h || newHsv.s !== hsvRef.current.s || newHsv.v !== hsvRef.current.v) {
+                setTimeout(() => setHsv(newHsv), 0);
+            }
         }
-    }, [color]);
+    }, [color, isDraggingWheel, isDraggingSlider]);
 
     // Handle Wheel Interaction (Hue & Saturation)
     const handleWheelChange = useCallback((e) => {
@@ -93,10 +101,10 @@ export default function WheelColorPicker({ color, onChange, swatches = true }) {
         const distance = Math.sqrt(x * x + y * y);
         const saturation = Math.min(100, Math.round((distance / radius) * 100));
 
-        const newHsv = { ...hsv, h: Math.round(angle), s: saturation };
+        const newHsv = { ...hsvRef.current, h: Math.round(angle), s: saturation };
         setHsv(newHsv);
         onChange(hsvToHex(newHsv));
-    }, [hsv, onChange]);
+    }, [onChange]);
 
     // Handle Slider Interaction (Value/Brightness)
     const handleSliderChange = useCallback((e) => {
@@ -107,10 +115,10 @@ export default function WheelColorPicker({ color, onChange, swatches = true }) {
         let percentage = (clientX - rect.left) / rect.width;
         percentage = Math.max(0, Math.min(1, percentage));
 
-        const newHsv = { ...hsv, v: Math.round(percentage * 100) };
+        const newHsv = { ...hsvRef.current, v: Math.round(percentage * 100) };
         setHsv(newHsv);
         onChange(hsvToHex(newHsv));
-    }, [hsv, onChange]);
+    }, [onChange]);
 
     // Mouse/Touch Events for Wheel
     const onWheelMouseDown = (e) => {

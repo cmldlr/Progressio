@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 // Custom Color Picker (No external libraries)
 import { Check, ChevronRight } from 'lucide-react';
 
@@ -8,7 +8,7 @@ const LIGHTNESS_LEVELS = [95, 85, 75, 65, 55, 45, 35];
 export default function CustomColorPicker({ color, onChange }) {
     // Parse initial color to HSL or fallback to red
     const [hue, setHue] = useState(0);
-    const [isOpen, setIsOpen] = useState(false);
+
 
     // Simple HSL to Hex helper
     const hslToHex = (h, s, l) => {

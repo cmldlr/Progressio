@@ -52,6 +52,15 @@ const INITIAL_SETTINGS = {
     maxWeekNumber: 1 // Varsayılan hafta sayısı
 };
 
+// Helper outside hook
+const calculateWeekNumber = (targetDate, startDateStr) => {
+    const start = new Date(startDateStr);
+    const target = new Date(targetDate);
+    const diffDays = differenceInCalendarDays(target, start);
+    if (diffDays < 0) return 1;
+    return Math.floor(diffDays / 7) + 1;
+};
+
 export function useWorkoutData() {
     // 1. Global Settings State
     const [settings, setSettings] = useState(INITIAL_SETTINGS);
@@ -73,15 +82,6 @@ export function useWorkoutData() {
     useEffect(() => {
         userRef.current = user;
     }, [user]);
-
-    // --- Helpers ---
-    const calculateWeekNumber = (targetDate, startDateStr) => {
-        const start = new Date(startDateStr);
-        const target = new Date(targetDate);
-        const diffDays = differenceInCalendarDays(target, start);
-        if (diffDays < 0) return 1;
-        return Math.floor(diffDays / 7) + 1;
-    };
 
     // Dinamik tarih hesaplama - ASLA DB'den tarih okuma
     const getWeekDates = useCallback((weekNum, startDateStr) => {
@@ -243,7 +243,7 @@ export function useWorkoutData() {
             subscription?.unsubscribe();
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, []);
+    }, [createEmptyWeek, hydrateWeekFromDB]);
 
     // --- Debounced Save ---
     const saveActiveWeek = useCallback(async (weekToSave) => {

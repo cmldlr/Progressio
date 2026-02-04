@@ -53,15 +53,7 @@ export default function BodyDiagram({ selectedMuscles = [], onToggleMuscle, musc
     const regions = view === 'front' ? FRONT_MUSCLE_REGIONS : BACK_MUSCLE_REGIONS;
     const imageSrc = view === 'front' ? '/body_front.png' : '/body_back.png';
 
-    const getMuscleStyle = (isSelected, isHovered) => {
-        if (isSelected) {
-            return 'bg-indigo-500/50 border-2 border-indigo-500';
-        }
-        if (isHovered) {
-            return 'bg-blue-400/40 border-2 border-blue-400';
-        }
-        return 'bg-transparent hover:bg-white/30 hover:border hover:border-gray-400';
-    };
+
 
     const renderMuscleRegion = (muscleId, region) => {
         const isSelected = selectedMuscles.includes(muscleId);

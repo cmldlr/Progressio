@@ -109,7 +109,7 @@ export default function ProgressCharts({ measurements = [], onEdit, onDelete }) 
     };
 
     const currentCategoryMetrics = Object.entries(METRICS)
-        .filter(([_, m]) => m.category === activeTab)
+        .filter(([, m]) => m.category === activeTab)
         .map(([id, m]) => ({ id, ...m }));
 
     if (measurements.length === 0) {

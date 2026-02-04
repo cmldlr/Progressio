@@ -88,7 +88,7 @@ export default function CalendarView({ data, actions, onNavigate }) {
     const startDate = data.startDate ? new Date(data.startDate) : new Date();
 
     // Takvim Grid sınırlarını hesapla (memoized)
-    const { monthStart, monthEnd, startDateGrid, endDateGrid, calendarDays } = useMemo(() => {
+    const { monthStart, startDateGrid, endDateGrid, calendarDays } = useMemo(() => {
         const ms = startOfMonth(currentDate);
         const me = endOfMonth(ms);
         const sdg = startOfWeek(ms, { weekStartsOn: 1 });
@@ -166,7 +166,7 @@ export default function CalendarView({ data, actions, onNavigate }) {
         };
 
         loadMonthWeeks();
-    }, [visibleWeekNumbers, data.userId]); // removed weeksCache dependency to be safe, added missingWeeks logic inside
+    }, [visibleWeekNumbers, data.userId, weeksCache]);
 
     // Belirli bir tarihin programdaki hafta numarasını ve verisini bul
     const getWorkoutInfo = (date) => {

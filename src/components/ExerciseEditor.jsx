@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import BodyDiagramSVG from './BodyDiagramSVG';
-import WheelColorPicker from './WheelColorPicker'; // NEW IMPORT
+import WheelColorPicker from './WheelColorPicker';
 import {
     COLOR_OPTIONS,
-    getPreviewStyles,
-    extractColorId,
-    THEME_COLORS
+    extractColorId
 } from '../utils/themeColors';
 import { X, Check, Search, ChevronDown, Palette, ChevronUp } from 'lucide-react';
 
@@ -15,7 +13,6 @@ export default function ExerciseEditor({
     onClose,
     isNew = false,
     exerciseName,
-    exerciseIndex,
     exerciseDetails,
     muscleGroups,
     workoutTypes,
@@ -132,9 +129,6 @@ export default function ExerciseEditor({
     }, [isOpen, exerciseName, exerciseDetails, rowColor]);
 
 
-    // Validation for hex vs preset
-    const isCustomColor = (color) => color && color.startsWith('#');
-
     // ... (Existing helpers) ...
     const handleNameSelect = (selectedName) => {
         setName(selectedName);
@@ -153,13 +147,6 @@ export default function ExerciseEditor({
                 setSelectedMuscles(defaults.muscles);
             }
         }
-    };
-
-    // ...
-
-    // Helper to get button style (simplified for HEX usage)
-    const getButtonStyle = (color) => {
-        return { backgroundColor: color };
     };
 
 

@@ -4,8 +4,6 @@ import { X } from 'lucide-react';
 import {
     THEME_COLORS,
     COLOR_OPTIONS,
-    getPreviewClasses,
-    extractColorId
 } from '../utils/themeColors';
 import WheelColorPicker from './WheelColorPicker';
 

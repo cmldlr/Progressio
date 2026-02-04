@@ -11,7 +11,7 @@ import { LogOut, Settings, Upload, Download, RefreshCw, Menu, Calendar, Clock, F
 
 export default function Dashboard() {
     const { data, activeWeek, actions, user, loading, syncStatus, syncError, signOut } = useWorkoutData();
-    const { measurements, addMeasurement, updateMeasurement, deleteMeasurement, loading: measurementsLoading } = useMeasurements();
+    const { measurements, addMeasurement, updateMeasurement, deleteMeasurement } = useMeasurements();
 
     const [showSettings, setShowSettings] = useState(false);
     const [showMeasurements, setShowMeasurements] = useState(false);
@@ -123,37 +123,13 @@ export default function Dashboard() {
                 } else {
                     alert("Geçersiz yedek dosyası.");
                 }
-            } catch (err) {
+            } catch {
                 alert("Dosya okunamadı.");
             }
         };
     };
 
-    const SyncIndicator = () => {
-        const statusConfig = {
-            idle: { icon: 'check-circle', color: 'text-gray-400', label: 'Hazır' },
-            syncing: { icon: 'refresh-ccw', color: 'text-blue-500 animate-spin', label: 'Senkronize...' },
-            synced: { icon: 'check-circle', color: 'text-green-500', label: 'Senkronize' },
-            error: { icon: 'alert-circle', color: 'text-red-500', label: syncError || 'Hata' }
-        };
-        const status = statusConfig[syncStatus] || statusConfig.idle;
 
-        return (
-            <div
-                className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 cursor-help transition-all"
-                title={syncError || "Senkronizasyon Durumu"}
-                onClick={() => syncStatus === 'error' && alert(syncError)}
-            >
-                <span className={`w-2 h-2 rounded-full ${syncStatus === 'synced' ? 'bg-green-400' :
-                    syncStatus === 'syncing' ? 'bg-blue-400' :
-                        syncStatus === 'error' ? 'bg-red-400' : 'bg-gray-400'
-                    } `} />
-                <span className={`text-xs font-medium hidden sm:inline ${syncStatus === 'error' ? 'text-red-300' : 'text-gray-200'}`}>
-                    {status.label.length > 20 ? status.label.substring(0, 17) + '...' : status.label}
-                </span>
-            </div>
-        );
-    };
 
     if (loading) return null; // Or a skeleton loader
 
@@ -173,7 +149,7 @@ export default function Dashboard() {
 
                         {/* Sync Indicator - Visible on Mobile now */}
                         <div className="flex md:block">
-                            <SyncIndicator />
+                            <SyncIndicator syncStatus={syncStatus} syncError={syncError} />
                         </div>
                     </div>
 
@@ -368,3 +344,29 @@ export default function Dashboard() {
         </div>
     );
 }
+
+const SyncIndicator = ({ syncStatus, syncError }) => {
+    const statusConfig = {
+        idle: { icon: 'check-circle', color: 'text-gray-400', label: 'Hazır' },
+        syncing: { icon: 'refresh-ccw', color: 'text-blue-500 animate-spin', label: 'Senkronize...' },
+        synced: { icon: 'check-circle', color: 'text-green-500', label: 'Senkronize' },
+        error: { icon: 'alert-circle', color: 'text-red-500', label: syncError || 'Hata' }
+    };
+    const status = statusConfig[syncStatus] || statusConfig.idle;
+
+    return (
+        <div
+            className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 cursor-help transition-all"
+            title={syncError || "Senkronizasyon Durumu"}
+            onClick={() => syncStatus === 'error' && alert(syncError)}
+        >
+            <span className={`w-2 h-2 rounded-full ${syncStatus === 'synced' ? 'bg-green-400' :
+                syncStatus === 'syncing' ? 'bg-blue-400' :
+                    syncStatus === 'error' ? 'bg-red-400' : 'bg-gray-400'
+                } `} />
+            <span className={`text-xs font-medium hidden sm:inline ${syncStatus === 'error' ? 'text-red-300' : 'text-gray-200'}`}>
+                {status.label.length > 20 ? status.label.substring(0, 17) + '...' : status.label}
+            </span>
+        </div>
+    );
+};

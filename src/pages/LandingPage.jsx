@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     ArrowRight, Activity, Calendar, Shield, BarChart,
     Dumbbell, TrendingUp, Smartphone, Cloud, Zap, Target,
-    ChevronRight, Star, Users, CheckCircle
+    ChevronRight, Star, CheckCircle
 } from 'lucide-react';
 import AuthModal from '../components/AuthModal';
 
@@ -11,7 +11,8 @@ export default function LandingPage() {
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
-        setIsVisible(true);
+        const timer = setTimeout(() => setIsVisible(true), 100);
+        return () => clearTimeout(timer);
     }, []);
 
     return (

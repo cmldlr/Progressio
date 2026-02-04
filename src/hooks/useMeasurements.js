@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase, auth, measurementsDB } from '../lib/supabaseClient';
+import { auth, measurementsDB } from '../lib/supabaseClient';
 
 export function useMeasurements() {
     const [measurements, setMeasurements] = useState([]);

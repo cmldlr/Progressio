@@ -12,11 +12,9 @@ import {
     useSensor,
     useSensors,
     DragOverlay,
-    defaultDropAnimationSideEffects
 } from '@dnd-kit/core';
 import { restrictToVerticalAxis, restrictToWindowEdges } from '@dnd-kit/modifiers';
 import {
-    arrayMove,
     SortableContext,
     sortableKeyboardCoordinates,
     verticalListSortingStrategy,
@@ -193,11 +191,11 @@ export default function WeeklyGrid({
     // Reset mobile view to 0 when entering focus mode (since days array will have only 1 item)
     useEffect(() => {
         if (focusMode) {
-            setMobileDayIndex(0);
+            setTimeout(() => setMobileDayIndex(0), 0);
         } else {
             // Restore to actual today index when exiting focus mode
             const today = new Date().getDay();
-            setMobileDayIndex(today === 0 ? 6 : today - 1);
+            setTimeout(() => setMobileDayIndex(today === 0 ? 6 : today - 1), 0);
         }
     }, [focusMode]);
 
@@ -219,12 +217,12 @@ export default function WeeklyGrid({
             const todayConfig = days[dayMapIndex];
 
             if (todayConfig && todayConfig.type && todayConfig.type !== 'Off') {
-                setFilterType(todayConfig.type);
+                setTimeout(() => setFilterType(todayConfig.type), 0);
             } else {
-                setFilterType('All'); // Eğer Off ise veya bulunamazsa hepsini göster
+                setTimeout(() => setFilterType('All'), 0);
             }
         } else {
-            setFilterType('All'); // Focus mode kapandığında filtreyi sıfırla
+            setTimeout(() => setFilterType('All'), 0); // Focus mode kapandığında filtreyi sıfırla
         }
     }, [focusMode, days]);
 
@@ -681,7 +679,7 @@ export default function WeeklyGrid({
                     {/* Mobile Exercises List */}
                     <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px]">
                         <SortableContext items={mobileIds} strategy={verticalListSortingStrategy}>
-                            {visibleExercises.filter(({ name: exercise, originalIndex: rowIndex }) => {
+                            {visibleExercises.filter(({ originalIndex: rowIndex }) => {
                                 // User Override: Show all if toggled
                                 if (showAllExercises) return true;
 
@@ -712,8 +710,6 @@ export default function WeeklyGrid({
                                 const { className: rowClass, style: rowStyle } = getRowStyles(getColorIdFromClass(rowBgColor));
 
                                 const details = exerciseDetails[rowIndex] || {};
-                                const exerciseMuscles = details.muscles || [];
-                                // Unified extraction
                                 const rawWorkoutTypes = details.workoutTypes || details.workoutType;
                                 const exerciseWorkoutTypes = Array.isArray(rawWorkoutTypes)
                                     ? rawWorkoutTypes

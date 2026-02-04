@@ -155,7 +155,7 @@ const hexToHSL = (hex) => {
 export const generateThemeStyles = (hex) => {
     if (!hex || !hex.startsWith('#')) return null;
 
-    const { h, s, l } = hexToHSL(hex);
+    const { h, s } = hexToHSL(hex);
 
     // Light Mode Palette
     const bgLight = `hsl(${h}, ${s}%, 96%)`; // Very pale
