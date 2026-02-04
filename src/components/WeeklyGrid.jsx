@@ -584,13 +584,16 @@ export default function WeeklyGrid({
                                                             : getCellStyles(colorId);
 
                                                         return (
-                                                            <td key={day.id || index} className="p-0 border-r border-gray-200 dark:border-slate-800 relative align-top">
+                                                            <td
+                                                                key={day.id || index}
+                                                                className={`p-0 border-r border-gray-200 dark:border-slate-800 relative align-top ${cellClass}`}
+                                                                style={cellStyle}
+                                                            >
                                                                 <textarea
                                                                     disabled={isMismatch}
                                                                     value={gridData[cellKey] || ''}
                                                                     onChange={(e) => onCellChange(activeWeek.id, cellKey, e.target.value)}
-                                                                    className={`w-full min-h-[80px] p-2 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-all text-center text-sm font-medium resize-none overflow-y-auto ${cellClass}`}
-                                                                    style={cellStyle}
+                                                                    className="w-full h-full min-h-[80px] p-2 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-all text-center text-sm font-medium resize-none overflow-y-auto bg-transparent"
                                                                     placeholder={isMismatch ? '' : '-'}
                                                                 />
                                                             </td>
@@ -625,28 +628,32 @@ export default function WeeklyGrid({
                                     const { className, style } = getHeaderStyles(getColorIdFromClass(day.color));
                                     return (
                                         <div
-                                            className={`flex flex-col items-center max-w-[200px] py-1.5 px-4 rounded-xl transition-colors cursor-pointer ${className}`}
+                                            className={`flex flex-col items-center justify-center max-w-[280px] w-full py-1 px-4 rounded-xl transition-colors cursor-pointer ${className}`}
                                             style={style}
                                             onClick={() => openDayEditor(days[mobileDayIndex], mobileDayIndex)}
                                         >
-                                            <span className="text-xs font-semibold opacity-70 uppercase tracking-wider mb-0.5">
-                                                Gün {mobileDayIndex + 1} / 7
-                                            </span>
-                                            <span className="font-bold text-lg block truncate px-2">
-                                                {day.label}
-                                            </span>
-                                            {day.type && (
-                                                <span className="text-xs font-medium opacity-90 px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 mt-0.5 whitespace-nowrap">
-                                                    {day.type}
+                                            {/* Row 1: Day Name + Badge */}
+                                            <div className="flex items-center justify-center gap-2 mb-0.5 w-full">
+                                                <span className="font-bold text-lg truncate leading-tight">
+                                                    {day.label}
                                                 </span>
-                                            )}
-                                            {
-                                                day.displayDate && (
-                                                    <span className="text-xs opacity-80 font-medium mt-0.5">
-                                                        {day.displayDate}
+                                                {day.type && (
+                                                    <span className="text-[10px] font-bold opacity-90 px-2 py-0.5 rounded-full bg-black/10 dark:bg-white/10 uppercase tracking-wide whitespace-nowrap">
+                                                        {day.type}
                                                     </span>
-                                                )
-                                            }
+                                                )}
+                                            </div>
+
+                                            {/* Row 2: Day Count + Date */}
+                                            <div className="flex items-center gap-2 opacity-70 text-xs font-medium">
+                                                <span>Gün {mobileDayIndex + 1}/7</span>
+                                                {day.displayDate && (
+                                                    <>
+                                                        <span>•</span>
+                                                        <span>{day.displayDate}</span>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                     );
                                 })()}
