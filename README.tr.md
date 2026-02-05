@@ -1,52 +1,52 @@
-[![Türkçe](https://img.shields.io/badge/Dil-Türkçe-red)](README.tr.md)
+[![English](https://img.shields.io/badge/Language-English-blue)](README.md)
 
 # Progressio 🏋️
 
-Modern, cloud-based workout tracking and planning application. Built with React, Vite, TailwindCSS, and Supabase.
+Modern, bulut tabanlı antrenman takip ve planlama uygulaması. React, Vite, TailwindCSS ve Supabase ile geliştirilmiştir.
 
 ![React](https://img.shields.io/badge/React-19.2-61DAFB?style=flat-square&logo=react)
 ![Vite](https://img.shields.io/badge/Vite-7.2-646CFF?style=flat-square&logo=vite)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1-06B6D4?style=flat-square&logo=tailwindcss)
 ![Supabase](https://img.shields.io/badge/Supabase-Backend-3FCF8E?style=flat-square&logo=supabase)
 
-## 📋 Features
+## 📋 Özellikler
 
-- **📅 Weekly Workout Planning** - Create and edit 7-day programs
-- **💪 Exercise Management** - Track sets, reps, and weights
-- **📊 Progress Charts** - Visual reporting and analysis
-- **📏 Body Measurements** - Track weight, body fat %, muscle mass
-- **🎨 Interactive Body Diagram** - Visualize muscle groups
-- **☁️ Cloud Sync** - Access from all devices
-- **📱 Responsive Design** - Mobile and desktop compatible
-- **🌙 Dark Mode** - Eye-friendly interface
+- **📅 Haftalık Antrenman Planlaması** - 7 günlük program oluşturma ve düzenleme
+- **💪 Egzersiz Yönetimi** - Set, tekrar ve ağırlık takibi
+- **📊 İlerleme Grafikleri** - Görsel raporlama ve analiz
+- **📏 Vücut Ölçümleri** - Kilo, yağ oranı, kas kütlesi takibi
+- **🎨 İnteraktif Vücut Diyagramı** - Kas gruplarını görselleştirme
+- **☁️ Bulut Senkronizasyon** - Tüm cihazlardan erişim
+- **📱 Responsive Tasarım** - Mobil ve masaüstü uyumlu
+- **🌙 Karanlık Mod** - Göz yormayan arayüz
 
-## 🛠️ Tech Stack
+## 🛠️ Teknoloji Yığını
 
-| Category | Technology |
+| Kategori | Teknoloji |
 |----------|-----------|
 | Frontend | React 19, Vite 7, TailwindCSS 4 |
 | Backend | Supabase (PostgreSQL, Auth, RLS) |
-| Charts | Recharts |
-| Date Handling | date-fns |
-| Icons | Lucide React |
+| Grafikler | Recharts |
+| Tarih İşlemleri | date-fns |
+| İkonlar | Lucide React |
 | Routing | React Router DOM 7 |
 
-## 🚀 Installation
+## 🚀 Kurulum
 
-### Requirements
+### Gereksinimler
 
 - Node.js 18+ 
-- npm or yarn
-- Supabase account
+- npm veya yarn
+- Supabase hesabı
 
-### 1. Clone the Project
+### 1. Projeyi Klonlayın
 
 ```bash
 git clone https://github.com/cmldlr/Progressio.git
 cd Progressio
 ```
 
-### 2. Install Dependencies
+### 2. Bağımlılıkları Yükleyin
 
 ```bash
 npm install
@@ -54,33 +54,33 @@ npm install
 
 ### 3. Environment Variables
 
-Create a `.env` file:
+`.env` dosyası oluşturun:
 
 ```env
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-### 4. Development Server
+### 4. Geliştirme Sunucusu
 
 ```bash
 npm run dev
 ```
 
-The application will run at `http://localhost:5173`.
+Uygulama `http://localhost:5173` adresinde çalışacaktır.
 
-## 🗄️ Database Setup (Supabase)
+## 🗄️ Veritabanı Kurulumu (Supabase)
 
-Run the following SQL queries **in order** in Supabase Dashboard > SQL Editor:
+Supabase Dashboard > SQL Editor'da aşağıdaki SQL'leri **sırasıyla** çalıştırın:
 
-### Step 1: Main Tables
+### Adım 1: Ana Tablolar
 
 ```sql
 -- ==========================================
 -- Progressio Database Schema
 -- ==========================================
 
--- 1. Workout Data (User Settings)
+-- 1. Workout Data (Kullanıcı Ayarları)
 CREATE TABLE IF NOT EXISTS public.workout_data (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS public.workout_data (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. Weeks (Weekly Data)
+-- 2. Weeks (Haftalık Veriler)
 CREATE TABLE IF NOT EXISTS public.weeks (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES auth.users NOT NULL,
@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS public.weeks (
     UNIQUE (user_id, week_number)
 );
 
--- 3. Measurements
+-- 3. Measurements (Ölçümler)
 CREATE TABLE IF NOT EXISTS public.measurements (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES auth.users NOT NULL,
@@ -126,7 +126,7 @@ CREATE TABLE IF NOT EXISTS public.measurements (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. Profiles (User Profiles)
+-- 4. Profiles (Kullanıcı Profilleri)
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
     username TEXT UNIQUE NOT NULL,
@@ -137,11 +137,11 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 ```
 
-### Step 2: Row Level Security (RLS)
+### Adım 2: Row Level Security (RLS)
 
 ```sql
 -- ==========================================
--- RLS Policies
+-- RLS Politikaları
 -- ==========================================
 
 -- Workout Data RLS
@@ -204,14 +204,14 @@ GRANT ALL ON TABLE public.measurements TO authenticated;
 GRANT ALL ON TABLE public.measurements TO service_role;
 ```
 
-### Step 3: Functions & Triggers
+### Adım 3: Fonksiyonlar ve Trigger'lar
 
 ```sql
 -- ==========================================
--- Functions & Triggers
+-- Fonksiyonlar & Trigger'lar
 -- ==========================================
 
--- Create profile when new user is created
+-- Yeni kullanıcı oluştuğunda profil oluşturma
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -230,7 +230,7 @@ CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
--- Get email by username (for login)
+-- Kullanıcı adı ile email bulma (login için)
 CREATE OR REPLACE FUNCTION get_email_by_username(username_input TEXT)
 RETURNS TEXT AS $$
 DECLARE
@@ -246,14 +246,14 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 ## 🌐 Deployment (Netlify)
 
-### 1. Create New Site on Netlify
+### 1. Netlify'da Yeni Site Oluşturun
 
-Connect your GitHub repository.
+GitHub reposunu bağlayın.
 
-### 2. Build Settings
+### 2. Build Ayarları
 
-| Setting | Value |
-|---------|-------|
+| Ayar | Değer |
+|------|-------|
 | Build command | `npm run build` |
 | Publish directory | `dist` |
 
@@ -263,8 +263,8 @@ Netlify Dashboard > Site settings > Environment variables:
 
 | Key | Value |
 |-----|-------|
-| `VITE_SUPABASE_URL` | Your Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | Your Supabase anon key |
+| `VITE_SUPABASE_URL` | Supabase proje URL'iniz |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anon key'iniz |
 
 ### 4. Supabase Redirect URL
 
@@ -273,30 +273,30 @@ Supabase Dashboard > Authentication > URL Configuration:
 - **Site URL**: `https://your-site.netlify.app`
 - **Redirect URLs**: `https://your-site.netlify.app`
 
-## 📁 Project Structure
+## 📁 Proje Yapısı
 
 ```
 Progressio/
 ├── src/
 │   ├── components/
-│   │   ├── AuthModal.jsx        # Login/Register modal
-│   │   ├── BodyDiagramSVG.jsx   # Interactive body diagram
-│   │   ├── CalendarView.jsx     # Calendar view
-│   │   ├── ExerciseEditor.jsx   # Exercise editor
-│   │   ├── MeasurementsModal.jsx # Measurements input
-│   │   ├── ProgressCharts.jsx   # Progress charts
-│   │   ├── SettingsPanel.jsx    # Settings panel
-│   │   ├── WeeklyGrid.jsx       # Weekly grid
-│   │   └── WeekSelector.jsx     # Week selector
+│   │   ├── AuthModal.jsx        # Giriş/Kayıt modal
+│   │   ├── BodyDiagramSVG.jsx   # İnteraktif vücut diyagramı
+│   │   ├── CalendarView.jsx     # Takvim görünümü
+│   │   ├── ExerciseEditor.jsx   # Egzersiz düzenleme
+│   │   ├── MeasurementsModal.jsx # Ölçüm girişi
+│   │   ├── ProgressCharts.jsx   # İlerleme grafikleri
+│   │   ├── SettingsPanel.jsx    # Ayarlar paneli
+│   │   ├── WeeklyGrid.jsx       # Haftalık tablo
+│   │   └── WeekSelector.jsx     # Hafta seçici
 │   ├── hooks/
-│   │   └── useWorkoutData.js    # Data management hook
+│   │   └── useWorkoutData.js    # Veri yönetimi hook
 │   ├── lib/
-│   │   └── supabaseClient.js    # Supabase connection
+│   │   └── supabaseClient.js    # Supabase bağlantısı
 │   ├── pages/
-│   │   ├── Dashboard.jsx        # Main dashboard
-│   │   └── LandingPage.jsx      # Landing page
+│   │   ├── Dashboard.jsx        # Ana panel
+│   │   └── LandingPage.jsx      # Giriş sayfası
 │   ├── utils/
-│   │   └── themeColors.js       # Theme colors
+│   │   └── themeColors.js       # Tema renkleri
 │   ├── App.jsx
 │   ├── main.jsx
 │   └── index.css
@@ -309,21 +309,21 @@ Progressio/
 └── README.md
 ```
 
-## 🔐 Security
+## 🔐 Güvenlik
 
-- **Row Level Security (RLS)**: Users can only access their own data.
-- **Password Requirements**: 
-  - Minimum 8 characters
-  - At least 1 uppercase letter
-  - At least 1 lowercase letter
-  - At least 1 number
-- **Email Verification**: Email confirmation required after registration.
+- **Row Level Security (RLS)**: Her kullanıcı sadece kendi verilerine erişebilir
+- **Şifre Gereksinimleri**: 
+  - Minimum 8 karakter
+  - En az 1 büyük harf
+  - En az 1 küçük harf
+  - En az 1 rakam
+- **Email Doğrulama**: Kayıt sonrası email onayı gerekli
 
-## 📝 License
+## 📝 Lisans
 
-MIT License - See [LICENSE](LICENSE) for details.
+MIT License - Detaylar için [LICENSE](LICENSE) dosyasına bakın.
 
-## 👤 Developer
+## 👤 Geliştirici
 
 **Cemil Dalar**
 
@@ -331,4 +331,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-⭐ If you like this project, don't forget to give it a star!
+⭐ Bu projeyi beğendiyseniz yıldız vermeyi unutmayın!
