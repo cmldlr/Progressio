@@ -5,13 +5,18 @@ import WeekSelector from '../components/WeekSelector';
 import SettingsPanel from '../components/SettingsPanel';
 import MeasurementsModal from '../components/MeasurementsModal';
 import ProgressCharts from '../components/ProgressCharts';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { useWorkoutData } from '../hooks/useWorkoutData';
 import { useMeasurements } from '../hooks/useMeasurements';
+import useDialog from '../hooks/useDialog';
 import { LogOut, Settings, Upload, Download, RefreshCw, Menu, Calendar, Clock, Filter, Moon, Sun, Activity, TrendingUp } from 'lucide-react';
 
 export default function Dashboard() {
-    const { data, activeWeek, actions, user, loading, syncStatus, syncError, signOut } = useWorkoutData();
-    const { measurements, addMeasurement, updateMeasurement, deleteMeasurement } = useMeasurements();
+    const { dialog, showConfirm, showAlert, closeDialog } = useDialog();
+    const dialogCallbacks = { showConfirm, showAlert };
+
+    const { data, activeWeek, actions, user, loading, syncStatus, syncError, signOut } = useWorkoutData(dialogCallbacks);
+    const { measurements, addMeasurement, updateMeasurement, deleteMeasurement } = useMeasurements(dialogCallbacks);
 
     const [showSettings, setShowSettings] = useState(false);
     const [showMeasurements, setShowMeasurements] = useState(false);
@@ -116,15 +121,14 @@ export default function Dashboard() {
         fileReader.onload = e => {
             try {
                 const parsed = JSON.parse(e.target.result);
-                // Basit bir kontrol
                 if (parsed.muscleGroups || parsed.weeks) {
                     actions.importData(parsed);
-                    alert("Yedek başarıyla yüklendi!");
+                    showAlert({ title: 'Başarılı', message: 'Yedek başarıyla yüklendi!', type: 'success' });
                 } else {
-                    alert("Geçersiz yedek dosyası.");
+                    showAlert({ title: 'Hata', message: 'Geçersiz yedek dosyası.', type: 'error' });
                 }
             } catch {
-                alert("Dosya okunamadı.");
+                showAlert({ title: 'Hata', message: 'Dosya okunamadı.', type: 'error' });
             }
         };
     };
@@ -149,7 +153,7 @@ export default function Dashboard() {
 
                         {/* Sync Indicator - Visible on Mobile now */}
                         <div className="flex md:block">
-                            <SyncIndicator syncStatus={syncStatus} syncError={syncError} />
+                            <SyncIndicator syncStatus={syncStatus} syncError={syncError} showAlert={showAlert} />
                         </div>
                     </div>
 
@@ -278,6 +282,7 @@ export default function Dashboard() {
                                 onAddWeek={actions.addWeek}
                                 onDeleteWeek={actions.deleteWeek}
                                 onResetWeek={actions.resetWeek}
+                                onCopyWeek={actions.copyWeekTo}
                                 startDate={data.startDate}
                             />
                         </div>
@@ -340,12 +345,16 @@ export default function Dashboard() {
                 onClose={() => { setShowMeasurements(false); setEditingMeasurement(null); }}
                 onSave={handleSaveMeasurement}
                 initialData={editingMeasurement}
+                showAlert={showAlert}
             />
+
+            {/* Global React Dialog */}
+            <ConfirmDialog {...dialog} onClose={closeDialog} />
         </div>
     );
 }
 
-const SyncIndicator = ({ syncStatus, syncError }) => {
+const SyncIndicator = ({ syncStatus, syncError, showAlert }) => {
     const statusConfig = {
         idle: { icon: 'check-circle', color: 'text-gray-400', label: 'Hazır' },
         syncing: { icon: 'refresh-ccw', color: 'text-blue-500 animate-spin', label: 'Senkronize...' },
@@ -358,7 +367,7 @@ const SyncIndicator = ({ syncStatus, syncError }) => {
         <div
             className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 cursor-help transition-all"
             title={syncError || "Senkronizasyon Durumu"}
-            onClick={() => syncStatus === 'error' && alert(syncError)}
+            onClick={() => syncStatus === 'error' && showAlert({ title: 'Senkronizasyon Hatası', message: syncError, type: 'error' })}
         >
             <span className={`w-2 h-2 rounded-full ${syncStatus === 'synced' ? 'bg-green-400' :
                 syncStatus === 'syncing' ? 'bg-blue-400' :

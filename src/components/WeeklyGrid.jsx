@@ -174,6 +174,12 @@ export default function WeeklyGrid({
     const [filterType, setFilterType] = useState('All');
     const [filterMuscle, setFilterMuscle] = useState('All');
     const [showAllExercises, setShowAllExercises] = useState(false); // Mobile: Show hidden exercises
+    const [collapsedCards, setCollapsedCards] = useState({}); // Mobil: açılır/kapanır kartlar
+
+    // Swipe Navigation State
+    const touchStartRef = React.useRef({ x: 0, y: 0 });
+    const touchEndRef = React.useRef({ x: 0, y: 0 });
+    const swipeContainerRef = React.useRef(null);
 
     // Exercise Editor State
     const [editingExercise, setEditingExercise] = useState(null);
@@ -201,6 +207,35 @@ export default function WeeklyGrid({
 
     const handlePrevDay = () => setMobileDayIndex(prev => Math.max(0, prev - 1));
     const handleNextDay = () => setMobileDayIndex(prev => Math.min(days.length - 1, prev + 1));
+
+    // Swipe Handlers
+    const handleTouchStart = (e) => {
+        touchStartRef.current = { x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY };
+        touchEndRef.current = { x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY };
+    };
+    const handleTouchMove = (e) => {
+        touchEndRef.current = { x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY };
+    };
+    const handleTouchEnd = () => {
+        const dx = touchStartRef.current.x - touchEndRef.current.x;
+        const dy = Math.abs(touchStartRef.current.y - touchEndRef.current.y);
+        const minSwipe = 50;
+        // Only trigger horizontal swipe if horizontal distance > vertical distance
+        if (Math.abs(dx) > minSwipe && Math.abs(dx) > dy) {
+            if (dx > 0) {
+                // Sola kaydırma -> sonraki gün
+                handleNextDay();
+            } else {
+                // Sağa kaydırma -> önceki gün
+                handlePrevDay();
+            }
+        }
+    };
+
+    // Kart açılıp kapanma toggle
+    const toggleCardCollapse = (rowIndex) => {
+        setCollapsedCards(prev => ({ ...prev, [rowIndex]: !prev[rowIndex] }));
+    };
 
 
     // Focus Mode Effect: Dashboard'tan tetiklenirse
@@ -532,6 +567,14 @@ export default function WeeklyGrid({
                                                                                 {targetReps}
                                                                             </span>
                                                                         )}
+                                                                        {/* Veri göstergesi noktaları - Desktop */}
+                                                                        <div className="flex gap-0.5 ml-1">
+                                                                            {days.map((d, di) => {
+                                                                                const ck = `${rowIndex}-${d.id || di}`;
+                                                                                const hasData = gridData[ck] && gridData[ck].trim().length > 0;
+                                                                                return <span key={di} className={`w-1.5 h-1.5 rounded-full ${hasData ? 'bg-emerald-400' : 'bg-gray-200 dark:bg-slate-700'}`} title={`${d.label}: ${hasData ? 'Veri var' : 'Boş'}`} />;
+                                                                            })}
+                                                                        </div>
                                                                     </div>
                                                                     <span className="opacity-0 group-hover:opacity-100 text-xs text-gray-400">✎</span>
                                                                 </div>
@@ -608,16 +651,22 @@ export default function WeeklyGrid({
                 </div>
 
                 {/* Mobile/Tablet View (< lg) - "Day View" */}
-                <div className="lg:hidden flex flex-col h-full bg-gray-50 dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 overflow-hidden">
+                <div
+                    className="lg:hidden flex flex-col h-full bg-gray-50 dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 overflow-hidden"
+                    ref={swipeContainerRef}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                >
                     {/* Mobile Day Navigation Header */}
                     <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
                         <div className="flex items-center justify-between p-3">
                             <button
                                 onClick={handlePrevDay}
                                 disabled={mobileDayIndex === 0}
-                                className={`p-2 rounded-full transition ${mobileDayIndex === 0 ? 'text-gray-300 dark:text-slate-700' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800'}`}
+                                className={`p-2.5 rounded-full transition ${mobileDayIndex === 0 ? 'text-gray-300 dark:text-slate-700' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700'}`}
                             >
-                                <ChevronLeft className="w-6 h-6" />
+                                <ChevronLeft className="w-7 h-7" />
                             </button>
 
                             <div className="flex flex-col items-center flex-1">
@@ -626,7 +675,7 @@ export default function WeeklyGrid({
                                     const { className, style } = getHeaderStyles(getColorIdFromClass(day.color));
                                     return (
                                         <div
-                                            className={`flex flex-col items-center justify-center max-w-[280px] w-full py-1 px-4 rounded-xl transition-colors cursor-pointer ${className}`}
+                                            className={`flex flex-col items-center justify-center max-w-[280px] w-full py-1.5 px-4 rounded-xl transition-colors cursor-pointer ${className}`}
                                             style={style}
                                             onClick={() => openDayEditor(days[mobileDayIndex], mobileDayIndex)}
                                         >
@@ -642,15 +691,28 @@ export default function WeeklyGrid({
                                                 )}
                                             </div>
 
-                                            {/* Row 2: Day Count + Date */}
+                                            {/* Row 2: Day Count + Date + Swipe hint */}
                                             <div className="flex items-center gap-2 opacity-70 text-xs font-medium">
-                                                <span>Gün {mobileDayIndex + 1}/7</span>
+                                                <span>Gün {mobileDayIndex + 1}/{days.length}</span>
                                                 {day.displayDate && (
                                                     <>
                                                         <span>•</span>
                                                         <span>{day.displayDate}</span>
                                                     </>
                                                 )}
+                                            </div>
+
+                                            {/* Day Progress Dots */}
+                                            <div className="flex gap-1.5 mt-1.5">
+                                                {days.map((_, i) => (
+                                                    <span
+                                                        key={i}
+                                                        className={`w-2 h-2 rounded-full transition-all duration-300 ${i === mobileDayIndex
+                                                                ? 'bg-current scale-125'
+                                                                : 'bg-current opacity-30'
+                                                            }`}
+                                                    />
+                                                ))}
                                             </div>
                                         </div>
                                     );
@@ -669,15 +731,15 @@ export default function WeeklyGrid({
                             <button
                                 onClick={handleNextDay}
                                 disabled={mobileDayIndex === days.length - 1}
-                                className={`p-2 rounded-full transition ${mobileDayIndex === days.length - 1 ? 'text-gray-300 dark:text-slate-700' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800'}`}
+                                className={`p-2.5 rounded-full transition ${mobileDayIndex === days.length - 1 ? 'text-gray-300 dark:text-slate-700' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700'}`}
                             >
-                                <ChevronRight className="w-6 h-6" />
+                                <ChevronRight className="w-7 h-7" />
                             </button>
                         </div>
                     </div>
 
                     {/* Mobile Exercises List */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px]">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[300px]">
                         <SortableContext items={mobileIds} strategy={verticalListSortingStrategy}>
                             {visibleExercises.filter(({ originalIndex: rowIndex }) => {
                                 // User Override: Show all if toggled
@@ -705,7 +767,6 @@ export default function WeeklyGrid({
                                 const dayTypeLower = day.type.toLowerCase();
                                 return exerciseWorkoutTypes.some(t => t.toLowerCase() === dayTypeLower);
                             }).map(({ name: exercise, originalIndex: rowIndex }) => {
-                                // ... existing render logic ...
                                 const rowBgColor = rowColors[rowIndex] || '';
                                 const { className: rowClass, style: rowStyle } = getRowStyles(getColorIdFromClass(rowBgColor));
 
@@ -720,6 +781,9 @@ export default function WeeklyGrid({
                                 if (!day) return null;
 
                                 const cellKey = `${rowIndex}-${day.id || mobileDayIndex}`;
+                                const cellValue = gridData[cellKey] || '';
+                                const hasData = cellValue.trim().length > 0;
+                                const isCollapsed = collapsedCards[rowIndex] && hasData;
 
                                 const stableId = getStableId(rowIndex);
 
@@ -730,61 +794,92 @@ export default function WeeklyGrid({
                                         disabled={isReorderDisabled}
                                     >
                                         {(listeners, disabled) => (
-                                            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden">
-                                                {/* Header (Exercise Name) */}
+                                            <div className={`bg-white dark:bg-slate-900 rounded-2xl shadow-sm border overflow-hidden transition-all duration-200 ${hasData
+                                                    ? 'border-emerald-200 dark:border-emerald-800/50'
+                                                    : 'border-gray-100 dark:border-slate-800'
+                                                }`}>
+                                                {/* Header (Exercise Name + Data Indicator) */}
                                                 <div
-                                                    className={`flex items-center justify-between p-3 border-b border-gray-100 dark:border-slate-800 ${rowClass}`}
+                                                    className={`flex items-center justify-between p-3 ${isCollapsed ? '' : 'border-b border-gray-100 dark:border-slate-800'} ${rowClass} active:opacity-80 transition-opacity`}
                                                     style={rowStyle}
-                                                    onClick={() => openExerciseEditor(rowIndex, exercise)}
                                                 >
-                                                    <div className="flex items-center gap-3">
+                                                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
                                                         {/* Mobile Drag Handle */}
                                                         {!disabled && (
                                                             <div
                                                                 {...listeners}
-                                                                className="p-1 text-black/40 dark:text-white/40 cursor-grab touch-none"
+                                                                className="p-1.5 text-black/30 dark:text-white/30 cursor-grab touch-none flex-shrink-0"
                                                                 onClick={(e) => e.stopPropagation()}
                                                             >
                                                                 <GripVertical size={20} />
                                                             </div>
                                                         )}
 
-                                                        <div className="p-2 rounded-lg bg-black/5 dark:bg-white/10 text-gray-700 dark:text-white">
-                                                            <Dumbbell className="w-5 h-5" />
-                                                        </div>
-                                                        <div>
-                                                            <div className="font-bold text-sm text-gray-900 dark:text-white">{exercise}</div>
+                                                        {/* Data Indicator Dot */}
+                                                        <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 transition-colors ${hasData ? 'bg-emerald-400 dark:bg-emerald-500' : 'bg-gray-200 dark:bg-slate-700'
+                                                            }`} />
+
+                                                        <div className="flex-1 min-w-0" onClick={() => openExerciseEditor(rowIndex, exercise)}>
+                                                            <div className="font-bold text-sm text-gray-900 dark:text-white truncate">{exercise}</div>
                                                             {(targetReps || exerciseWorkoutTypes.length > 0) && (
                                                                 <div className="flex flex-wrap gap-1 mt-0.5">
-                                                                    {targetReps && <span className="text-[10px] opacity-80 bg-black/5 dark:bg-black/20 px-1 rounded text-gray-700 dark:text-gray-300">{targetReps}</span>}
+                                                                    {targetReps && <span className="text-[10px] opacity-80 bg-black/5 dark:bg-black/20 px-1.5 py-0.5 rounded text-gray-700 dark:text-gray-300">{targetReps}</span>}
                                                                     {exerciseWorkoutTypes.map(type => (
-                                                                        <span key={type} className="text-[10px] opacity-80 bg-black/5 dark:bg-black/20 px-1 rounded text-gray-700 dark:text-gray-300">{type}</span>
+                                                                        <span key={type} className="text-[10px] opacity-80 bg-black/5 dark:bg-black/20 px-1.5 py-0.5 rounded text-gray-700 dark:text-gray-300">{type}</span>
                                                                     ))}
                                                                 </div>
                                                             )}
                                                         </div>
                                                     </div>
-                                                    <div className="text-xs font-bold px-3 py-1.5 bg-black/5 dark:bg-white/10 rounded-md text-gray-700 dark:text-white hover:bg-black/10 dark:hover:bg-white/20 transition-colors">Düzenle</div>
-                                                </div>
 
-                                                {/* Data Input Cell */}
-                                                <div className="relative">
-                                                    {(() => {
-                                                        const { className, style } = getCellStyles(getColorIdFromClass(day.color));
-                                                        return (
-                                                            <textarea
-                                                                value={gridData[cellKey] || ''}
-                                                                onChange={(e) => onCellChange(activeWeek.id, cellKey, e.target.value)}
-                                                                placeholder={`${exercise} detayları...`}
-                                                                className={`w-full min-h-[120px] p-4 text-base resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset ${className}`}
-                                                                style={style}
-                                                            />
-                                                        );
-                                                    })()}
-                                                    <div className="absolute bottom-3 right-3 opacity-50">
-                                                        <Copy className="w-4 h-4" />
+                                                    {/* Collapse/Expand Toggle + Edit */}
+                                                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                                                        {hasData && (
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); toggleCardCollapse(rowIndex); }}
+                                                                className="p-1.5 rounded-lg bg-black/5 dark:bg-white/10 text-gray-500 dark:text-gray-400 active:bg-black/10 transition-colors"
+                                                            >
+                                                                {isCollapsed ? <Eye size={16} /> : <EyeOff size={16} />}
+                                                            </button>
+                                                        )}
+                                                        <div
+                                                            onClick={() => openExerciseEditor(rowIndex, exercise)}
+                                                            className="text-xs font-bold px-3 py-1.5 bg-black/5 dark:bg-white/10 rounded-lg text-gray-600 dark:text-white active:bg-black/10 dark:active:bg-white/20 transition-colors"
+                                                        >
+                                                            Düzenle
+                                                        </div>
                                                     </div>
                                                 </div>
+
+                                                {/* Collapsed Preview */}
+                                                {isCollapsed && (
+                                                    <div
+                                                        className="px-4 py-2.5 bg-emerald-50/50 dark:bg-emerald-950/20 cursor-pointer active:bg-emerald-100/50 dark:active:bg-emerald-900/20 transition-colors"
+                                                        onClick={() => toggleCardCollapse(rowIndex)}
+                                                    >
+                                                        <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium truncate">
+                                                            ✅ {cellValue.split('\n')[0]}{cellValue.includes('\n') ? '...' : ''}
+                                                        </p>
+                                                    </div>
+                                                )}
+
+                                                {/* Data Input Cell - Hidden when collapsed */}
+                                                {!isCollapsed && (
+                                                    <div className="relative">
+                                                        {(() => {
+                                                            const { className, style } = getCellStyles(getColorIdFromClass(day.color));
+                                                            return (
+                                                                <textarea
+                                                                    value={cellValue}
+                                                                    onChange={(e) => onCellChange(activeWeek.id, cellKey, e.target.value)}
+                                                                    placeholder={`${exercise} detayları...`}
+                                                                    className={`w-full p-4 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset ${className}`}
+                                                                    style={{ ...style, fontSize: '16px', minHeight: hasData ? '100px' : '80px' }}
+                                                                />
+                                                            );
+                                                        })()}
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </SortableMobileItem>
@@ -792,8 +887,8 @@ export default function WeeklyGrid({
                             })}
                         </SortableContext>
 
-                        {/* Hidden Exercises Summary (Optional - allowing user to see what's hidden if needed, or just pure hidden) */}
-                        <div className="text-center p-4">
+                        {/* Hidden Exercises Summary */}
+                        <div className="text-center p-3">
                             <p className="text-xs text-gray-400 dark:text-slate-600">
                                 {visibleExercises.length - visibleExercises.filter(({ name: exercise, originalIndex: rowIndex }) => {
                                     const details = exerciseDetails[rowIndex] || {};
@@ -804,7 +899,6 @@ export default function WeeklyGrid({
                                     const day = days[mobileDayIndex] || days[0];
                                     if (!day) return false;
 
-                                    // Re-use simplified logic for count
                                     if (showAllExercises) return true;
                                     if (day.type === 'Mix' || !day.type) return true;
                                     if (exerciseWorkoutTypes.includes('Mix') || exerciseWorkoutTypes.includes('Full Body') || exerciseWorkoutTypes.length === 0) return true;

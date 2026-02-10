@@ -1,7 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { auth, measurementsDB } from '../lib/supabaseClient';
 
-export function useMeasurements() {
+export function useMeasurements(dialogCallbacks = {}) {
+    const { showConfirm: _showConfirm } = dialogCallbacks;
+    const confirmAction = (title, message, onConfirm) => {
+        if (_showConfirm) _showConfirm({ title, message, type: 'confirm', onConfirm });
+        else if (window.confirm(message)) onConfirm();
+    };
+
     const [measurements, setMeasurements] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -37,8 +43,6 @@ export function useMeasurements() {
             if (!user) throw new Error("Kullanıcı bulunamadı");
 
             const newMeasurement = await measurementsDB.add(user.id, data);
-
-            // Optimistic update or reload
             setMeasurements(prev => [newMeasurement, ...prev]);
             return newMeasurement;
         } catch (err) {
@@ -53,8 +57,6 @@ export function useMeasurements() {
         try {
             setError(null);
             const updatedMeasurement = await measurementsDB.update(id, data);
-
-            // Update state
             setMeasurements(prev => prev.map(m => m.id === id ? updatedMeasurement : m));
             return updatedMeasurement;
         } catch (err) {
@@ -65,16 +67,20 @@ export function useMeasurements() {
     };
 
     // Delete Measurement
-    const deleteMeasurement = async (id) => {
-        if (!window.confirm("Bu ölçüm kaydını silmek istediğinize emin misiniz?")) return;
-
-        try {
-            await measurementsDB.delete(id);
-            setMeasurements(prev => prev.filter(m => m.id !== id));
-        } catch (err) {
-            console.error('Error deleting measurement:', err);
-            setError('Silme işlemi başarısız.');
-        }
+    const deleteMeasurement = (id) => {
+        confirmAction(
+            'Ölçümü Sil',
+            'Bu ölçüm kaydını silmek istediğinize emin misiniz?',
+            async () => {
+                try {
+                    await measurementsDB.delete(id);
+                    setMeasurements(prev => prev.filter(m => m.id !== id));
+                } catch (err) {
+                    console.error('Error deleting measurement:', err);
+                    setError('Silme işlemi başarısız.');
+                }
+            }
+        );
     };
 
     return {

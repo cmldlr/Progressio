@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Save, Ruler, Activity, ArrowRight } from 'lucide-react';
 
-export default function MeasurementsModal({ isOpen, onClose, onSave, initialData = null }) {
+export default function MeasurementsModal({ isOpen, onClose, onSave, initialData = null, showAlert }) {
     const [activeTab, setActiveTab] = useState('general'); // general, tape
     const [loading, setLoading] = useState(false);
 
@@ -99,7 +99,7 @@ export default function MeasurementsModal({ isOpen, onClose, onSave, initialData
         } catch (error) {
             console.error(error);
             setLoading(false);
-            alert("Kaydederken bir hata oluştu.");
+            if (showAlert) showAlert({ title: 'Hata', message: 'Kaydederken bir hata oluştu.', type: 'error' });
         }
     };
 
