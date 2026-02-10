@@ -294,6 +294,23 @@ export const extractColorId = (colorInput) => {
     return 'gray';
 };
 
+// Convert preset color key to representative hex (for color pickers)
+const PRESET_HEX_MAP = {
+    gray: '#6b7280',
+    red: '#ef4444',
+    blue: '#3b82f6',
+    green: '#10b981',
+    yellow: '#f59e0b',
+    purple: '#8b5cf6',
+    orange: '#f97316',
+};
+
+export const colorIdToHex = (colorId) => {
+    if (!colorId) return '#6b7280';
+    if (colorId.startsWith('#')) return colorId;
+    return PRESET_HEX_MAP[colorId] || '#6b7280';
+};
+
 // --- LEGACY COMPATIBILITY WRAPPERS (Deprecated but needed for now) ---
 // These will break customized colors if used directly expecting just a string class.
 // But we will update consumers to use the *Styles functions.

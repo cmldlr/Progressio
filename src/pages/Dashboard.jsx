@@ -54,6 +54,21 @@ export default function Dashboard() {
     // Akıllı Filtreleme (Bugüne Odaklan)
     const [focusMode, setFocusMode] = useState(false);
 
+    // Check if today's date is in the currently active week
+    const isTodayInActiveWeek = React.useMemo(() => {
+        if (!activeWeek?.days) return false;
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        return activeWeek.days.some(d => d.date && d.date.split('T')[0] === todayStr);
+    }, [activeWeek]);
+
+    // Auto-disable focusMode when switching to a week without today
+    useEffect(() => {
+        if (!isTodayInActiveWeek && focusMode) {
+            setFocusMode(false);
+        }
+    }, [isTodayInActiveWeek, focusMode]);
+
     // Dark Mode State
     const [darkMode, setDarkMode] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -172,9 +187,10 @@ export default function Dashboard() {
 
                         {/* Focus Mode Toggle */}
                         <button
-                            onClick={() => setFocusMode(!focusMode)}
-                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${focusMode ? 'bg-white text-gray-900 shadow-md' : 'bg-white/20 text-gray-300 hover:bg-white/30'}`}
-                            title="Sadece bugünün antrenmanlarını göster"
+                            onClick={() => isTodayInActiveWeek && setFocusMode(!focusMode)}
+                            disabled={!isTodayInActiveWeek}
+                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${!isTodayInActiveWeek ? 'opacity-40 cursor-not-allowed bg-white/10 text-gray-500' : focusMode ? 'bg-white text-gray-900 shadow-md' : 'bg-white/20 text-gray-300 hover:bg-white/30'}`}
+                            title={isTodayInActiveWeek ? 'Sadece bugünün antrenmanlarını göster' : 'Bugün bu haftada değil'}
                         >
                             <Filter className="w-3 h-3" />
                             {focusMode ? 'GÜN ODAKLI' : 'TÜM HAFTA'}
@@ -194,8 +210,9 @@ export default function Dashboard() {
 
                         {/* Mobile Focus Toggle (visible only on small screens) */}
                         <button
-                            onClick={() => setFocusMode(!focusMode)}
-                            className={`lg:hidden p-2 rounded-lg transition ${focusMode ? 'bg-white/20 text-white' : 'text-gray-300'}`}
+                            onClick={() => isTodayInActiveWeek && setFocusMode(!focusMode)}
+                            disabled={!isTodayInActiveWeek}
+                            className={`lg:hidden p-2 rounded-lg transition ${!isTodayInActiveWeek ? 'opacity-30 cursor-not-allowed text-gray-600' : focusMode ? 'bg-white/20 text-white' : 'text-gray-300'}`}
                         >
                             <Filter className="w-5 h-5" />
                         </button>

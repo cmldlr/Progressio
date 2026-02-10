@@ -4,9 +4,10 @@ import BodyDiagramSVG from './BodyDiagramSVG';
 import WheelColorPicker from './WheelColorPicker';
 import {
     COLOR_OPTIONS,
-    extractColorId
+    extractColorId,
+    colorIdToHex
 } from '../utils/themeColors';
-import { X, Check, Search, ChevronDown, Palette, ChevronUp } from 'lucide-react';
+import { X, Check, Search, ChevronDown, Palette, ChevronUp, Minus, Plus } from 'lucide-react';
 
 export default function ExerciseEditor({
     isOpen,
@@ -24,7 +25,12 @@ export default function ExerciseEditor({
     const [selectedMuscles, setSelectedMuscles] = useState([]);
     const [selectedWorkoutTypes, setSelectedWorkoutTypes] = useState([]); // Changed to array
     const [targetReps, setTargetReps] = useState('');
-    const [selectedColor, setSelectedColor] = useState(extractColorId(rowColor) || '#3b82f6'); // Default blue hex if empty
+    const [setCount, setSetCount] = useState(3);
+    const [repMin, setRepMin] = useState(12);
+    const [repMax, setRepMax] = useState(12);
+    const [rangeMode, setRangeMode] = useState(false); // false = single rep, true = rep range
+    const [freeTextMode, setFreeTextMode] = useState(false);
+    const [selectedColor, setSelectedColor] = useState(colorIdToHex(extractColorId(rowColor)));
     const [selectionMode, setSelectionMode] = useState('buttons');
     const [isComboboxOpen, setIsComboboxOpen] = useState(false);
     const [showColorPicker, setShowColorPicker] = useState(false); // Toggle picker visibility
@@ -111,16 +117,46 @@ export default function ExerciseEditor({
         if (isOpen) {
             setName(exerciseName || '');
             setSelectedMuscles(exerciseDetails?.muscles || []);
-            // Backward compatibility: string -> array
             const existingTypes = exerciseDetails?.workoutTypes ||
                 (exerciseDetails?.workoutType ? [exerciseDetails.workoutType] : []);
             setSelectedWorkoutTypes(existingTypes);
-            setTargetReps(exerciseDetails?.targetReps || '');
-            setSelectedColor(extractColorId(rowColor) || '#3b82f6');
+            const rawReps = exerciseDetails?.targetReps || '';
+            setTargetReps(rawReps);
+            // Parse formats: "3 x 6-8", "3 x 12", "3 x Max"
+            const matchRange = rawReps.match(/^\s*(\d+)\s*[xX×]\s*(\d+)\s*[-–]\s*(\d+)\s*$/);
+            const matchMax = rawReps.match(/^\s*(\d+)\s*[xX×]\s*[Mm]ax\s*$/);
+            const matchSingle = rawReps.match(/^\s*(\d+)\s*[xX×]\s*(\d+)\s*$/);
+            if (matchRange) {
+                setSetCount(parseInt(matchRange[1], 10));
+                setRepMin(parseInt(matchRange[2], 10));
+                setRepMax(parseInt(matchRange[3], 10));
+                setRangeMode(true);
+                setFreeTextMode(false);
+            } else if (matchMax) {
+                setSetCount(parseInt(matchMax[1], 10));
+                setRepMin(0); // 0 = Max
+                setRepMax(0);
+                setRangeMode(false);
+                setFreeTextMode(false);
+            } else if (matchSingle) {
+                setSetCount(parseInt(matchSingle[1], 10));
+                setRepMin(parseInt(matchSingle[2], 10));
+                setRepMax(parseInt(matchSingle[2], 10));
+                setRangeMode(false);
+                setFreeTextMode(false);
+            } else if (rawReps.trim()) {
+                setFreeTextMode(true);
+            } else {
+                setSetCount(3);
+                setRepMin(12);
+                setRepMax(12);
+                setRangeMode(false);
+                setFreeTextMode(false);
+            }
+            setSelectedColor(colorIdToHex(extractColorId(rowColor)));
             setSelectionMode('buttons');
             setIsComboboxOpen(false);
-            setShowColorPicker(false); // Reset color picker visibility
-            // Lock body scroll
+            setShowColorPicker(false);
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = '';
@@ -171,15 +207,59 @@ export default function ExerciseEditor({
     };
 
     const handleSave = () => {
+        let finalReps;
+        if (freeTextMode) {
+            finalReps = targetReps.trim();
+        } else if (repMin === 0) {
+            finalReps = `${setCount} x Max`;
+        } else if (rangeMode && repMin !== repMax) {
+            finalReps = `${setCount} x ${repMin}-${repMax}`;
+        } else {
+            finalReps = `${setCount} x ${repMin}`;
+        }
         onSave({
             name: name.trim(),
             muscles: selectedMuscles,
-            workoutTypes: selectedWorkoutTypes, // Array olarak kaydet
-            targetReps: targetReps.trim(),
+            workoutTypes: selectedWorkoutTypes,
+            targetReps: finalReps,
             rowColor: selectedColor
         });
         onClose();
     };
+
+    const applyPreset = (p) => {
+        setSetCount(p.s);
+        if (p.rMin !== undefined) {
+            setRepMin(p.rMin);
+            setRepMax(p.rMax);
+            setRangeMode(true);
+        } else {
+            setRepMin(p.r);
+            setRepMax(p.r);
+            setRangeMode(p.r === 0 ? false : false);
+        }
+    };
+
+    const matchesPreset = (p) => {
+        if (p.rMin !== undefined) {
+            return setCount === p.s && repMin === p.rMin && repMax === p.rMax && rangeMode;
+        }
+        return setCount === p.s && repMin === p.r && !rangeMode;
+    };
+
+    const QUICK_PRESETS = [
+        { s: 3, r: 8, label: '3×8' },
+        { s: 3, r: 10, label: '3×10' },
+        { s: 3, r: 12, label: '3×12' },
+        { s: 4, r: 8, label: '4×8' },
+        { s: 4, r: 10, label: '4×10' },
+        { s: 4, r: 12, label: '4×12' },
+        { s: 5, r: 5, label: '5×5' },
+        { s: 3, rMin: 6, rMax: 8, label: '3×6-8' },
+        { s: 3, rMin: 8, rMax: 12, label: '3×8-12' },
+        { s: 4, rMin: 6, rMax: 8, label: '4×6-8' },
+        { s: 3, r: 0, label: '3×Max' }
+    ];
 
     // Toggle workout type selection
     const toggleWorkoutType = (type) => {
@@ -295,42 +375,179 @@ export default function ExerciseEditor({
                         )}
                     </div>
 
-                    {/* Stats Row */}
-                    <div className="grid grid-cols-2 gap-4">
-                        {/* Target Reps */}
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Hedef (Set x Tekrar)
+                    {/* Set × Tekrar — Interactive Stepper */}
+                    <div>
+                        <div className="flex items-center justify-between mb-3">
+                            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                Hedef (Set × Tekrar)
                             </label>
+                            <button
+                                type="button"
+                                onClick={() => setFreeTextMode(!freeTextMode)}
+                                className="text-[11px] font-medium text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
+                            >
+                                {freeTextMode ? 'Seçici Modu' : 'Serbest Yazı'}
+                            </button>
+                        </div>
+
+                        {freeTextMode ? (
+                            /* Serbest metin girişi */
                             <input
                                 type="text"
                                 value={targetReps}
                                 onChange={(e) => setTargetReps(e.target.value)}
                                 className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-gray-400 dark:focus:ring-white outline-none text-gray-900 dark:text-white transition-all text-center font-medium"
-                                placeholder="3 x 12"
+                                placeholder="3 x 12, Drop set, vb."
                             />
-                        </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {/* Stepper Row */}
+                                <div className="flex items-center gap-3">
+                                    {/* Set Stepper */}
+                                    <div className="flex-1 flex items-center gap-0 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSetCount(prev => Math.max(1, prev - 1))}
+                                            className="p-3 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 active:bg-gray-200 dark:active:bg-slate-600 transition-colors"
+                                        >
+                                            <Minus size={16} />
+                                        </button>
+                                        <div className="flex-1 text-center">
+                                            <div className="text-2xl font-black text-gray-900 dark:text-white leading-none">{setCount}</div>
+                                            <div className="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">Set</div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSetCount(prev => Math.min(20, prev + 1))}
+                                            className="p-3 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 active:bg-gray-200 dark:active:bg-slate-600 transition-colors"
+                                        >
+                                            <Plus size={16} />
+                                        </button>
+                                    </div>
 
-                        {/* Workout Types - Multi Select */}
-                        <div className="col-span-2">
-                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Antrenman Tipleri
-                            </label>
-                            <div className="flex flex-wrap gap-2">
-                                {(workoutTypes || []).map(type => (
-                                    <button
-                                        key={type}
-                                        type="button"
-                                        onClick={() => toggleWorkoutType(type)}
-                                        className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all border ${selectedWorkoutTypes.includes(type)
-                                            ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white shadow-md'
-                                            : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-slate-700 hover:border-gray-400'
-                                            }`}
-                                    >
-                                        {type}
-                                    </button>
-                                ))}
+                                    {/* × Divider */}
+                                    <span className="text-xl font-black text-gray-300 dark:text-slate-600 select-none">×</span>
+
+                                    {/* Rep Stepper(s) */}
+                                    {repMin === 0 && !rangeMode ? (
+                                        /* Max mode */
+                                        <div
+                                            className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 py-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                                            onClick={() => { setRepMin(12); setRepMax(12); }}
+                                        >
+                                            <div className="text-center">
+                                                <div className="text-lg font-black text-amber-500 dark:text-amber-400 leading-none">Max</div>
+                                                <div className="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">Tekrar</div>
+                                            </div>
+                                        </div>
+                                    ) : rangeMode ? (
+                                        /* Range mode: Min — Max */
+                                        <div className="flex-1 flex items-center gap-1">
+                                            <div className="flex-1 flex items-center gap-0 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
+                                                <button type="button" onClick={() => setRepMin(prev => Math.max(1, prev - 1))} className="p-2.5 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 active:bg-gray-200 transition-colors">
+                                                    <Minus size={14} />
+                                                </button>
+                                                <div className="flex-1 text-center">
+                                                    <div className="text-xl font-black text-gray-900 dark:text-white leading-none">{repMin}</div>
+                                                    <div className="text-[9px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Min</div>
+                                                </div>
+                                                <button type="button" onClick={() => setRepMin(prev => Math.min(repMax - 1, prev + 1))} className="p-2.5 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 active:bg-gray-200 transition-colors">
+                                                    <Plus size={14} />
+                                                </button>
+                                            </div>
+                                            <span className="text-sm font-bold text-gray-300 dark:text-slate-600">–</span>
+                                            <div className="flex-1 flex items-center gap-0 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
+                                                <button type="button" onClick={() => setRepMax(prev => Math.max(repMin + 1, prev - 1))} className="p-2.5 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 active:bg-gray-200 transition-colors">
+                                                    <Minus size={14} />
+                                                </button>
+                                                <div className="flex-1 text-center">
+                                                    <div className="text-xl font-black text-gray-900 dark:text-white leading-none">{repMax}</div>
+                                                    <div className="text-[9px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Max</div>
+                                                </div>
+                                                <button type="button" onClick={() => setRepMax(prev => Math.min(100, prev + 1))} className="p-2.5 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 active:bg-gray-200 transition-colors">
+                                                    <Plus size={14} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        /* Single rep mode */
+                                        <div className="flex-1 flex items-center gap-0 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
+                                            <button type="button" onClick={() => setRepMin(prev => Math.max(1, prev - 1))} className="p-3 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 active:bg-gray-200 dark:active:bg-slate-600 transition-colors">
+                                                <Minus size={16} />
+                                            </button>
+                                            <div className="flex-1 text-center">
+                                                <div className="text-2xl font-black text-gray-900 dark:text-white leading-none">{repMin}</div>
+                                                <div className="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">Tekrar</div>
+                                            </div>
+                                            <button type="button" onClick={() => { setRepMin(prev => Math.min(100, prev + 1)); setRepMax(prev => Math.min(100, prev + 1)); }} className="p-3 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 active:bg-gray-200 dark:active:bg-slate-600 transition-colors">
+                                                <Plus size={16} />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Mode Toggles + Quick Presets */}
+                                <div className="flex items-center gap-2">
+                                    <div className="flex bg-gray-100 dark:bg-slate-800 p-0.5 rounded-lg">
+                                        <button
+                                            type="button"
+                                            onClick={() => { setRangeMode(false); setRepMin(repMin || 12); setRepMax(repMin || 12); }}
+                                            className={`px-2 py-1 text-[10px] font-bold rounded-md transition-all ${!rangeMode && repMin !== 0 ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-slate-500'}`}
+                                        >Tek</button>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setRangeMode(true); if (repMin === 0) { setRepMin(6); } setRepMax(Math.max((repMin || 6) + 2, repMax)); }}
+                                            className={`px-2 py-1 text-[10px] font-bold rounded-md transition-all ${rangeMode ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-slate-500'}`}
+                                        >Aralık</button>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setRangeMode(false); setRepMin(0); setRepMax(0); }}
+                                            className={`px-2 py-1 text-[10px] font-bold rounded-md transition-all ${repMin === 0 && !rangeMode ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 shadow-sm' : 'text-gray-400 dark:text-slate-500'}`}
+                                        >Max</button>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-wrap gap-1.5">
+                                    {QUICK_PRESETS.map(p => {
+                                        const isSelected = matchesPreset(p);
+                                        return (
+                                            <button
+                                                key={p.label}
+                                                type="button"
+                                                onClick={() => applyPreset(p)}
+                                                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all border ${isSelected
+                                                    ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white shadow-sm'
+                                                    : 'bg-white dark:bg-slate-800/60 text-gray-500 dark:text-slate-400 border-gray-200 dark:border-slate-700 hover:border-gray-400 dark:hover:border-slate-500'
+                                                    }`}
+                                            >
+                                                {p.label || `${p.s}×${p.r}`}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             </div>
+                        )}
+                    </div>
+
+                    {/* Workout Types - Multi Select */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Antrenman Tipleri
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                            {(workoutTypes || []).map(type => (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    onClick={() => toggleWorkoutType(type)}
+                                    className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all border ${selectedWorkoutTypes.includes(type)
+                                        ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white shadow-md'
+                                        : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-slate-700 hover:border-gray-400'
+                                        }`}
+                                >
+                                    {type}
+                                </button>
+                            ))}
                         </div>
                     </div>
 
